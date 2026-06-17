@@ -1,4 +1,4 @@
-package com.mycompany.porteria_1.view;
+package vista;
 
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;

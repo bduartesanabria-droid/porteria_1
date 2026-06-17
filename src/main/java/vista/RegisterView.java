@@ -1,4 +1,4 @@
-package com.mycompany.porteria_1.view;
+package vista;
 
 import java.awt.BorderLayout;
 import javax.swing.JComboBox;

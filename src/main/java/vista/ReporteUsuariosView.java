@@ -1,4 +1,4 @@
-package com.mycompany.porteria_1.view;
+package vista;
 
 public class ReporteUsuariosView extends ModuleView {
     public ReporteUsuariosView(DashboardView mainFrame) {

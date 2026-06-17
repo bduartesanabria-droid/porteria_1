@@ -1,4 +1,4 @@
-package com.mycompany.porteria_1.view;
+package vista;
 
 public class GestionPerfilesView extends ModuleView {
     public GestionPerfilesView(DashboardView mainFrame) {

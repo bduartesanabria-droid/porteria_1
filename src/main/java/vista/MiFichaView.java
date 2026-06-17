@@ -1,4 +1,4 @@
-package com.mycompany.porteria_1.view;
+package vista;
 
 public class MiFichaView extends ModuleView {
     public MiFichaView(DashboardView mainFrame) {
