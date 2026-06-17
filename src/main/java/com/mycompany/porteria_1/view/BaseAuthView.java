@@ -22,6 +22,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -37,7 +38,7 @@ import javax.swing.border.EmptyBorder;
 abstract class BaseAuthView extends JFrame {
 
     private final List<ThemeAware> themed = new ArrayList<ThemeAware>();
-    private final MovingBackgroundPanel background = new MovingBackgroundPanel();
+    protected final MovingBackgroundPanel background = new MovingBackgroundPanel();
     private boolean darkMode;
     protected final Color soft = new Color(120, 130, 140);
 
@@ -91,19 +92,29 @@ abstract class BaseAuthView extends JFrame {
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setBorder(new EmptyBorder(72, 18, 72, 18));
 
-        ThemeLabel logo = label("SENA", 32, Kind.LOGO);
+        ThemeLabel logo = label("<html><div style='color:#f69514;'><b>SENA</b><br><span style='font-size:36px;'>\u26A8</span></div></html>", 32, Kind.LOGO);
         panel.add(logo);
-        panel.add(Box.createVerticalStrut(26));
-        panel.add(leftLine("Únete al"));
-        panel.add(Box.createVerticalStrut(10));
-        panel.add(leftLine("Centro de Gestión"));
-        panel.add(Box.createVerticalStrut(10));
-        panel.add(leftLine("Agroempresarial"));
-        panel.add(Box.createVerticalStrut(10));
-        panel.add(leftLine("del Oriente"));
+        panel.add(Box.createVerticalStrut(30));
+        ThemeLabel titleGroup = new ThemeLabel("", 52, Kind.LEFT) {
+            @Override
+            public void applyTheme(boolean dark) {
+                String cNormal = dark ? "#f0f4f8" : "#212b43";
+                String cGreen = "#3eaa00";
+                String cOrange = "#f69514";
+                setText("<html><div style='line-height: 0.9;'>" +
+                        "<span style='color:" + cNormal + ";'>Únete al</span><br>" +
+                        "<span style='color:" + cGreen + ";'>Centro de Gestión</span><br>" +
+                        "<span style='color:" + cOrange + ";'>Agroempresarial</span><br>" +
+                        "<span style='color:" + cGreen + ";'>del Oriente</span>" +
+                        "</div></html>");
+            }
+        };
+        titleGroup.setAlignmentX(LEFT_ALIGNMENT);
+        register(titleGroup);
+        panel.add(titleGroup);
         panel.add(Box.createVerticalStrut(30));
 
-        ThemeLabel desc = html(description, 500, 21, Kind.SUBTITLE);
+        ThemeLabel desc = html(description, 450, 18, Kind.SUBTITLE);
         panel.add(desc);
         return panel;
     }
@@ -144,7 +155,17 @@ abstract class BaseAuthView extends JFrame {
     }
 
     protected JPanel badge(String text) {
-        JPanel panel = new JPanel(new BorderLayout());
+        JPanel panel = new JPanel(new BorderLayout()) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(themeToggleFill());
+                g2.fillOval(0, 0, getWidth(), getHeight());
+                g2.dispose();
+                super.paintComponent(g);
+            }
+        };
         panel.setOpaque(false);
         panel.setPreferredSize(new Dimension(86, 86));
         panel.setMaximumSize(new Dimension(86, 86));
@@ -175,6 +196,12 @@ abstract class BaseAuthView extends JFrame {
         ThemePasswordField field = new ThemePasswordField(placeholder);
         register(field);
         return field;
+    }
+
+    protected ThemeCheckBox checkBox(String text) {
+        ThemeCheckBox cb = new ThemeCheckBox(text);
+        register(cb);
+        return cb;
     }
 
     protected JComboBox<String> combo(String... items) {
@@ -348,8 +375,7 @@ abstract class BaseAuthView extends JFrame {
                     break;
                 case ICON:
                     setForeground(accentGreen());
-                    setOpaque(true);
-                    setBackground(themeToggleFill());
+                    setOpaque(false);
                     break;
                 case LINK:
                     setForeground(linkColor());
@@ -413,13 +439,15 @@ abstract class BaseAuthView extends JFrame {
     protected class ThemePasswordField extends JPasswordField implements ThemeAware {
         private final String placeholder;
         private boolean showingPlaceholder = true;
+        private boolean showPassword = false;
+        private boolean showEyeHover = false;
 
         ThemePasswordField(final String placeholder) {
             super(placeholder);
             this.placeholder = placeholder;
             setEchoChar((char) 0);
             setFont(new Font("Segoe UI", Font.BOLD, 18));
-            setBorder(new EmptyBorder(18, 18, 18, 18));
+            setBorder(new EmptyBorder(18, 18, 18, 50));
             setOpaque(false);
             addFocusListener(new FocusAdapter() {
                 @Override
@@ -427,7 +455,7 @@ abstract class BaseAuthView extends JFrame {
                     if (showingPlaceholder) {
                         setText("");
                         showingPlaceholder = false;
-                        setEchoChar('•');
+                        setEchoChar(showPassword ? (char) 0 : '•');
                     }
                     setForeground(inputText());
                 }
@@ -439,6 +467,28 @@ abstract class BaseAuthView extends JFrame {
                         setText(placeholder);
                         setEchoChar((char) 0);
                         setForeground(placeholderText());
+                    }
+                }
+            });
+            addMouseListener(new java.awt.event.MouseAdapter() {
+                @Override
+                public void mouseClicked(java.awt.event.MouseEvent e) {
+                    if (e.getX() > getWidth() - 70) {
+                        showPassword = !showPassword;
+                        if (!showingPlaceholder) {
+                            setEchoChar(showPassword ? (char) 0 : '•');
+                        }
+                        repaint();
+                    }
+                }
+            });
+            addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+                @Override
+                public void mouseMoved(java.awt.event.MouseEvent e) {
+                    boolean hover = e.getX() > getWidth() - 70;
+                    if (hover != showEyeHover) {
+                        showEyeHover = hover;
+                        setCursor(Cursor.getPredefinedCursor(showEyeHover ? Cursor.HAND_CURSOR : Cursor.TEXT_CURSOR));
                     }
                 }
             });
@@ -461,6 +511,15 @@ abstract class BaseAuthView extends JFrame {
             g2.drawRoundRect(1, 1, getWidth() - 4, getHeight() - 4, 20, 20);
             g2.dispose();
             super.paintComponent(g);
+
+            Graphics2D g3 = (Graphics2D) g.create();
+            g3.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g3.setFont(new Font("Segoe UI", Font.BOLD, 22));
+            g3.setColor(placeholderText());
+            String eyeText = showPassword ? "\u2298" : "\u25CE"; // Eye symbols approximation
+            int tw = g3.getFontMetrics().stringWidth(eyeText);
+            g3.drawString(eyeText, getWidth() - tw - 20, getHeight() / 2 + 8);
+            g3.dispose();
         }
     }
 
@@ -532,7 +591,7 @@ abstract class BaseAuthView extends JFrame {
 
         @Override
         public void applyTheme(boolean darkMode) {
-            setText(darkMode ? "Modo claro" : "Modo oscuro");
+            setText(darkMode ? "☀ Modo claro" : "🌙 Modo oscuro");
             setForeground(themeToggleText());
             repaint();
         }
@@ -542,9 +601,9 @@ abstract class BaseAuthView extends JFrame {
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2.setColor(new Color(0, 0, 0, darkMode ? 48 : 14));
-            g2.fillRoundRect(5, 6, getWidth() - 8, getHeight() - 8, 20, 20);
+            g2.fillRoundRect(5, 6, getWidth() - 8, getHeight() - 8, getHeight(), getHeight());
             g2.setColor(themeToggleFill());
-            g2.fillRoundRect(0, 0, getWidth() - 8, getHeight() - 8, 20, 20);
+            g2.fillRoundRect(0, 0, getWidth() - 8, getHeight() - 8, getHeight(), getHeight());
             g2.dispose();
             super.paintComponent(g);
         }
@@ -567,6 +626,20 @@ abstract class BaseAuthView extends JFrame {
         @Override
         public void applyTheme(boolean darkMode) {
             setForeground(linkColor());
+        }
+    }
+
+    protected class ThemeCheckBox extends JCheckBox implements ThemeAware {
+        ThemeCheckBox(String text) {
+            super(text);
+            setOpaque(false);
+            setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 18));
+            setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        }
+
+        @Override
+        public void applyTheme(boolean darkMode) {
+            setForeground(darkMode ? new Color(170, 181, 198) : new Color(120, 130, 140));
         }
     }
 
@@ -621,6 +694,16 @@ abstract class BaseAuthView extends JFrame {
         private final List<Node> nodes = new ArrayList<Node>();
         private final Random random = new Random();
         private boolean dark;
+        private Color lightStart = new Color(235, 246, 233);
+        private Color lightEnd = new Color(247, 250, 255);
+        private Color lightLine = new Color(155, 219, 135, 58);
+        private Color lightPoint = new Color(126, 206, 96, 160);
+        private Color lightGlow = new Color(126, 206, 96, 22);
+        private Color darkStart = new Color(14, 18, 28);
+        private Color darkEnd = new Color(22, 27, 39);
+        private Color darkLine = new Color(120, 220, 160, 46);
+        private Color darkPoint = new Color(130, 240, 180, 150);
+        private Color darkGlow = new Color(130, 240, 180, 34);
 
         MovingBackgroundPanel() {
             setOpaque(true);
@@ -639,6 +722,19 @@ abstract class BaseAuthView extends JFrame {
 
         void setDarkMode(boolean dark) {
             this.dark = dark;
+        }
+
+        void setPalette(Color lightStart, Color lightEnd, Color lightLine, Color lightPoint, Color lightGlow, Color darkStart, Color darkEnd, Color darkLine, Color darkPoint, Color darkGlow) {
+            this.lightStart = lightStart;
+            this.lightEnd = lightEnd;
+            this.lightLine = lightLine;
+            this.lightPoint = lightPoint;
+            this.lightGlow = lightGlow;
+            this.darkStart = darkStart;
+            this.darkEnd = darkEnd;
+            this.darkLine = darkLine;
+            this.darkPoint = darkPoint;
+            this.darkGlow = darkGlow;
         }
 
         private void updateNodes() {
@@ -665,14 +761,14 @@ abstract class BaseAuthView extends JFrame {
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             int w = getWidth();
             int h = getHeight();
-            Color start = dark ? new Color(14, 18, 28) : new Color(235, 246, 233);
-            Color end = dark ? new Color(22, 27, 39) : new Color(247, 250, 255);
+            Color start = dark ? darkStart : lightStart;
+            Color end = dark ? darkEnd : lightEnd;
             g2.setPaint(new GradientPaint(0, 0, start, w, h, end));
             g2.fillRect(0, 0, w, h);
 
-            Color line = dark ? new Color(120, 220, 160, 46) : new Color(155, 219, 135, 58);
-            Color point = dark ? new Color(130, 240, 180, 150) : new Color(126, 206, 96, 160);
-            Color glow = dark ? new Color(130, 240, 180, 34) : new Color(126, 206, 96, 22);
+            Color line = dark ? darkLine : lightLine;
+            Color point = dark ? darkPoint : lightPoint;
+            Color glow = dark ? darkGlow : lightGlow;
 
             for (int i = 0; i < nodes.size(); i++) {
                 Node a = nodes.get(i);

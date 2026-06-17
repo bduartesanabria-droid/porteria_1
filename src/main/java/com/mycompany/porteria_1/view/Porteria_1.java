@@ -11,7 +11,7 @@ public class Porteria_1 {
                 UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             } catch (Exception ignored) {
             }
-            new LoginView().setVisible(true);
+            new DashboardView().setVisible(true);
         });
     }
 }

@@ -31,14 +31,14 @@ public class RegisterView extends BaseAuthView {
             }
         });
 
-        return buildCard(560, 780, (card, g) -> {
+        return buildCard(620, 780, (card, g) -> {
             addRow(card, g, headerBar("register", new Runnable() {
                 @Override
                 public void run() {
                     toggleTheme();
                 }
             }), 0, 10);
-            addRow(card, g, badge("U+"), 0, 8);
+            addRow(card, g, badge("\uD83D\uDC64+"), 0, 8);
             addRow(card, g, title("Registro Único", 34), 12, 8);
             addRow(card, g, subtitle("Crea tu perfil y accede a los servicios digitales del SENA."), 0, 18);
             addRow(card, g, nombre, 6, 12);
@@ -55,7 +55,7 @@ public class RegisterView extends BaseAuthView {
             jornadaBox.add(jornada, BorderLayout.CENTER);
             addRow(card, g, jornadaBox, 0, 18);
 
-            addRow(card, g, action("Finalizar Registro y Enviar Código"), 6, 14);
+            addRow(card, g, action("Finalizar Registro y Enviar Código \u27A4"), 6, 14);
             addRow(card, g, login, 18, 0);
         });
     }

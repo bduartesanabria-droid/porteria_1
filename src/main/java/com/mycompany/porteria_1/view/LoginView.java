@@ -1,7 +1,7 @@
 package com.mycompany.porteria_1.view;
 
 import java.awt.BorderLayout;
-import javax.swing.JCheckBox;
+import java.awt.Color;
 import javax.swing.JPanel;
 
 public class LoginView extends BaseAuthView {
@@ -17,34 +17,47 @@ public class LoginView extends BaseAuthView {
     private JPanel buildForm() {
         javax.swing.JTextField user = field("Correo o Documento");
         javax.swing.JPasswordField pass = password("Contraseña");
-        JCheckBox remember = new JCheckBox("Recordarme");
-        remember.setOpaque(false);
-        remember.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 18));
-        remember.setForeground(soft);
+        ThemeCheckBox remember = checkBox("Recordarme");
 
-        javax.swing.JLabel forgot = link("<html><u>¿Olvidaste tu contraseña?</u></html>", new Runnable() {
+        ThemeLink forgot = new ThemeLink("<html><u>¿Olvidaste tu contraseña?</u></html>", new Runnable() {
             @Override
             public void run() {
             }
-        });
-        forgot.setForeground(soft);
+        }) {
+            @Override
+            public void applyTheme(boolean dark) {
+                setForeground(dark ? new Color(170, 181, 198) : new Color(120, 130, 140));
+            }
+        };
+        register(forgot);
 
-        javax.swing.JLabel signup = link("<html><span style='color:#7a7a7a;'>¿No tienes una cuenta? </span><span style='color:#49aa00; font-weight:bold;'>Regístrate aquí</span></html>", new Runnable() {
+        ThemeLink signup = new ThemeLink("", new Runnable() {
             @Override
             public void run() {
                 dispose();
                 new RegisterView().setVisible(true);
             }
-        });
+        }) {
+            @Override
+            public void applyTheme(boolean dark) {
+                super.applyTheme(dark);
+                String c1 = dark ? "#aab5c6" : "#7a7a7a";
+                String c2 = dark ? "#aaff9c" : "#49aa00";
+                setText("<html><span style='color:" + c1 + ";'>¿No tienes una cuenta? </span><span style='color:" + c2 + "; font-weight:bold;'>Regístrate aquí</span></html>");
+            }
+        };
+        register(signup);
 
-        return buildCard(560, 760, (card, g) -> {
+        return buildCard(620, 760, (card, g) -> {
             addRow(card, g, headerBar("login", new Runnable() {
                 @Override
                 public void run() {
                     toggleTheme();
                 }
             }), 0, 10);
-            addRow(card, g, badge("S"), 0, 8);
+            
+            addRow(card, g, badge("\uD83D\uDEE1"), 0, 8);
+
             addRow(card, g, title("Bienvenido", 36), 12, 8);
             addRow(card, g, subtitle("Acceso unificado al sistema de identidad institucional."), 0, 18);
             addRow(card, g, user, 6, 16);
@@ -56,7 +69,7 @@ public class LoginView extends BaseAuthView {
             row.add(forgot, BorderLayout.EAST);
             addRow(card, g, row, 8, 18);
 
-            addRow(card, g, action("Ingresar de Forma Segura"), 8, 18);
+            addRow(card, g, action("Ingresar de Forma Segura \u2794"), 8, 18);
             addRow(card, g, signup, 18, 0);
         });
     }
