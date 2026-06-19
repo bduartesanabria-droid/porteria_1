@@ -11,11 +11,13 @@ import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.RenderingHints;
+import controlador.ScannerControlador;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
@@ -152,6 +154,11 @@ public class ScannerQRView extends JPanel {
 
         JButton scan = new AccentButton("⏻  INICIAR ESCÁNER", new Color(50, 168, 0), 200);
         scan.setAlignmentX(Component.CENTER_ALIGNMENT);
+        scan.addActionListener(e ->
+            JOptionPane.showMessageDialog(this,
+                "El escáner de cámara requiere acceso a hardware externo.\n"
+              + "Usa la verificación manual para ingresar documentos.",
+                "Escáner de cámara", JOptionPane.INFORMATION_MESSAGE));
 
         inner.add(camIcon);
         inner.add(Box.createVerticalStrut(6));
@@ -202,6 +209,68 @@ public class ScannerQRView extends JPanel {
 
         JButton verify = new AccentButton("🔍  Verificar Documento", new Color(50, 168, 0), 220);
         verify.setAlignmentX(Component.CENTER_ALIGNMENT);
+        verify.addActionListener(e -> {
+            String codigo = field.getText().trim();
+            if (codigo.isEmpty() || codigo.equals("ID / CÉDULA DEL USUARIO")) {
+                JOptionPane.showMessageDialog(this,
+                    "Ingresa un ID, cédula o código QR antes de verificar.",
+                    "Campo vacío", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            try {
+                ScannerControlador.ResultadoVerificacion rv = ScannerControlador.verificar(codigo);
+                if (!rv.encontrado) {
+                    JOptionPane.showMessageDialog(this,
+                        "No se encontró ninguna entidad con: " + codigo,
+                        "No encontrado", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                String info = construirInfoEntidad(rv);
+                int opcion = JOptionPane.showConfirmDialog(this,
+                    info + "\n\n¿Registrar ENTRADA para esta persona/entidad?",
+                    "Entidad encontrada — Confirmar ingreso",
+                    JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                if (opcion != JOptionPane.YES_OPTION) return;
+
+                ScannerControlador.ResultadoMovimiento mov;
+                if (rv.tipo == ScannerControlador.TipoEntidad.USUARIO) {
+                    modelo.Usuario u = (modelo.Usuario) rv.entidad;
+                    mov = ScannerControlador.registrarMovimientoUsuario(u.getId(), "Entrada", null);
+                } else {
+                    String tipoRef = mapearTipo(rv.tipo);
+                    int id = obtenerIdEntidad(rv);
+                    mov = ScannerControlador.registrarMovimientoEntidad(tipoRef, id, "Entrada");
+                }
+
+                switch (mov) {
+                    case OK:
+                        JOptionPane.showMessageDialog(this,
+                            "Entrada registrada con éxito.",
+                            "Registro exitoso", JOptionPane.INFORMATION_MESSAGE);
+                        field.setText("ID / CÉDULA DEL USUARIO");
+                        break;
+                    case DISCREPANCIA:
+                        JOptionPane.showMessageDialog(this,
+                            "Entrada registrada con advertencia:\nposible discrepancia (¿ya estaba adentro?).",
+                            "Discrepancia detectada", JOptionPane.WARNING_MESSAGE);
+                        field.setText("ID / CÉDULA DEL USUARIO");
+                        break;
+                    case ENTIDAD_NO_ENCONTRADA:
+                        JOptionPane.showMessageDialog(this,
+                            "No se pudo registrar: entidad no encontrada en accesos.",
+                            "Error de registro", JOptionPane.ERROR_MESSAGE);
+                        break;
+                    default:
+                        JOptionPane.showMessageDialog(this,
+                            "Error al guardar en la base de datos.",
+                            "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this,
+                    "Error al consultar la base de datos:\n" + ex.getMessage(),
+                    "Error de conexión", JOptionPane.ERROR_MESSAGE);
+            }
+        });
 
         inner.add(link);
         inner.add(Box.createVerticalStrut(14));
@@ -210,6 +279,59 @@ public class ScannerQRView extends JPanel {
         inner.add(verify);
         card.add(inner);
         return card;
+    }
+
+    // ── Helpers de entidad ────────────────────────────────────────────────────
+
+    private String construirInfoEntidad(ScannerControlador.ResultadoVerificacion rv) {
+        try {
+            switch (rv.tipo) {
+                case USUARIO: {
+                    modelo.Usuario u = (modelo.Usuario) rv.entidad;
+                    return "Tipo: Usuario\nNombre: " + u.getNombre() + "\nDocumento: " + u.getDocumento()
+                         + (u.getCargo() != null ? "\nCargo: " + u.getCargo() : "");
+                }
+                case VISITANTE: {
+                    modelo.Visitante v = (modelo.Visitante) rv.entidad;
+                    return "Tipo: Visitante\nNombre: " + v.getNombre() + "\nDocumento: " + v.getDocumento()
+                         + (v.getMotivo() != null ? "\nMotivo: " + v.getMotivo() : "");
+                }
+                case VEHICULO: {
+                    modelo.Vehiculo vh = (modelo.Vehiculo) rv.entidad;
+                    return "Tipo: Vehículo\nPlaca: " + vh.getPlaca()
+                         + (vh.getPropietario() != null ? "\nPropietario: " + vh.getPropietario() : "");
+                }
+                case OBJETO_EXTERNO: {
+                    modelo.ObjetoExterno obj = (modelo.ObjetoExterno) rv.entidad;
+                    return "Tipo: Objeto Externo\nDescripción: " + obj.getDescripcion()
+                         + (obj.getPropietario() != null ? "\nPropietario: " + obj.getPropietario() : "");
+                }
+                default: return "Entidad: " + rv.entidad;
+            }
+        } catch (Exception ex) {
+            return "Entidad encontrada: " + rv.mensaje;
+        }
+    }
+
+    private String mapearTipo(ScannerControlador.TipoEntidad tipo) {
+        switch (tipo) {
+            case VISITANTE:      return "Visitante";
+            case VEHICULO:       return "Vehiculo";
+            case OBJETO_EXTERNO: return "ObjetoExterno";
+            default:             return "Desconocido";
+        }
+    }
+
+    private int obtenerIdEntidad(ScannerControlador.ResultadoVerificacion rv) {
+        try {
+            if (rv.tipo == ScannerControlador.TipoEntidad.VISITANTE)
+                return ((modelo.Visitante) rv.entidad).getId();
+            if (rv.tipo == ScannerControlador.TipoEntidad.VEHICULO)
+                return ((modelo.Vehiculo) rv.entidad).getId();
+            if (rv.tipo == ScannerControlador.TipoEntidad.OBJETO_EXTERNO)
+                return ((modelo.ObjetoExterno) rv.entidad).getId();
+        } catch (Exception ignored) {}
+        return -1;
     }
 
     // ── Botón acento ──────────────────────────────────────────────────────────
