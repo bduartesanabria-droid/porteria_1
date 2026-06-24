@@ -127,7 +127,14 @@ public class MiFichaView extends JPanel {
         tabla.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         tabla.setRowHeight(26);
         tabla.setSelectionBackground(new Color(220, 240, 210));
+        tabla.setSelectionForeground(new Color(30, 30, 30));
         tabla.setGridColor(new Color(230, 230, 230));
+        
+        javax.swing.table.DefaultTableCellRenderer centerRenderer = new javax.swing.table.DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+        tabla.setDefaultRenderer(Object.class, centerRenderer);
+        ((javax.swing.table.DefaultTableCellRenderer)tabla.getTableHeader().getDefaultRenderer()).setHorizontalAlignment(JLabel.CENTER);
+        
         tabla.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 12));
         tabla.getTableHeader().setBackground(new Color(245, 248, 245));
         tabla.setFillsViewportHeight(true);

@@ -30,12 +30,16 @@ public class GestionPerfilesView extends JPanel {
         root.setOpaque(false);
         root.add(buildTopBar(), BorderLayout.NORTH);
 
+        JPanel topPanel = new JPanel(new BorderLayout(0, 10));
+        topPanel.setOpaque(false);
+        topPanel.add(buildFilterBar(), BorderLayout.NORTH);
+        topPanel.add(buildActionBar(), BorderLayout.SOUTH);
+
         JPanel content = new JPanel(new BorderLayout(0, 12));
         content.setOpaque(false);
         content.setBorder(new EmptyBorder(20, 24, 20, 24));
-        content.add(buildFilterBar(), BorderLayout.NORTH);
+        content.add(topPanel, BorderLayout.NORTH);
         content.add(buildTablePanel(), BorderLayout.CENTER);
-        content.add(buildActionBar(), BorderLayout.SOUTH);
 
         root.add(content, BorderLayout.CENTER);
         return root;
@@ -92,7 +96,14 @@ public class GestionPerfilesView extends JPanel {
         tabla.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         tabla.setRowHeight(28);
         tabla.setSelectionBackground(new Color(220, 240, 210));
+        tabla.setSelectionForeground(new Color(30, 30, 30));
         tabla.setGridColor(new Color(230, 230, 230));
+        
+        javax.swing.table.DefaultTableCellRenderer centerRenderer = new javax.swing.table.DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+        tabla.setDefaultRenderer(Object.class, centerRenderer);
+        ((javax.swing.table.DefaultTableCellRenderer)tabla.getTableHeader().getDefaultRenderer()).setHorizontalAlignment(JLabel.CENTER);
+        
         tabla.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 12));
         tabla.getTableHeader().setBackground(new Color(245, 248, 245));
         tabla.setFillsViewportHeight(true);
@@ -112,22 +123,25 @@ public class GestionPerfilesView extends JPanel {
         bar.setOpaque(false);
         bar.setBorder(new EmptyBorder(8, 0, 0, 0));
 
+        JButton btnAgregar = makeBtn("➕ Agregar Perfil", new Color(0, 150, 136));
+        btnAgregar.addActionListener(e -> agregarPerfil());
+
         JButton btnCargaMasiva = makeBtn("📁 Carga Masiva (CSV)", new Color(50, 100, 160));
         btnCargaMasiva.addActionListener(e -> cargarMasivaCSV());
 
-        JButton btnEditar = makeBtn("\u270f Editar", new Color(57, 169, 0));
+        JButton btnEditar = makeBtn("✏ Editar", new Color(57, 169, 0));
         btnEditar.addActionListener(e -> editarSeleccionado());
 
-        JButton btnContrasena = makeBtn("\uD83D\uDD11 Cambiar Contrase\u00f1a", new Color(200, 120, 0));
+        JButton btnContrasena = makeBtn("🔑 Cambiar Contraseña", new Color(200, 120, 0));
         btnContrasena.addActionListener(e -> cambiarContrasena());
 
-        JButton btnEstado = makeBtn("\u2205 Activar / Desactivar", new Color(180, 40, 40));
+        JButton btnEstado = makeBtn("∅ Activar / Desactivar", new Color(180, 40, 40));
         btnEstado.addActionListener(e -> toggleEstado());
 
-        JButton btnVolver = makeBtn("\u2190 Volver", new Color(100, 100, 100));
+        JButton btnVolver = makeBtn("← Volver", new Color(100, 100, 100));
         btnVolver.addActionListener(e -> mainFrame.showCard("general"));
 
-        bar.add(btnCargaMasiva); bar.add(btnEditar); bar.add(btnContrasena); bar.add(btnEstado);
+        bar.add(btnAgregar); bar.add(btnCargaMasiva); bar.add(btnEditar); bar.add(btnContrasena); bar.add(btnEstado);
         bar.add(Box.createHorizontalStrut(20)); bar.add(btnVolver);
         return bar;
     }
@@ -315,12 +329,158 @@ public class GestionPerfilesView extends JPanel {
                         }
                     }
                 }
-                JOptionPane.showMessageDialog(this, "Se importaron " + count + " usuarios correctamente.", "Carga Masiva Exitosa", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Carga completada. Usuarios agregados: " + count, "Éxito", JOptionPane.INFORMATION_MESSAGE);
                 cargarDatos();
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Error procesando el archivo CSV: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Error leyendo CSV: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
+    }
+
+    private void agregarPerfil() {
+        JDialog d = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Nuevo Perfil", true);
+        d.setSize(650, 500);
+        d.setLocationRelativeTo(this);
+        d.setLayout(new BorderLayout());
+        d.getContentPane().setBackground(Color.WHITE);
+
+        JPanel header = new JPanel(new BorderLayout());
+        header.setBackground(Color.WHITE);
+        header.setBorder(new EmptyBorder(20, 30, 10, 30));
+        JLabel lblTitle = new JLabel("Nuevo Perfil");
+        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        lblTitle.setForeground(new Color(57, 169, 0));
+        header.add(lblTitle, BorderLayout.WEST);
+        
+        JPanel pForm = new JPanel(new GridLayout(0, 2, 30, 20));
+        pForm.setBackground(Color.WHITE);
+        pForm.setBorder(new EmptyBorder(10, 30, 10, 30));
+
+        JTextField txtNombre = new JTextField();
+        JTextField txtDoc = new JTextField();
+        JTextField txtCorreo = new JTextField();
+        JPasswordField txtPass = new JPasswordField();
+        
+        JComboBox<String> cbRol = new JComboBox<>(new String[]{"Admin", "Usuario"});
+        cbRol.setSelectedItem("Usuario");
+        
+        JComboBox<String> cbCargo = new JComboBox<>(new String[]{
+            "Seleccione...", "Aprendiz", "Instructor", "Coordinaci\u00f3n", 
+            "Subdirector", "Administrativo", "Celador", "Administrador de Sistema"
+        });
+
+        pForm.add(crearCampoConLabel("\uD83D\uDC64 Nombre Completo", txtNombre));
+        pForm.add(crearCampoConLabel("\uD83E\uDEAA Documento", txtDoc));
+        pForm.add(crearCampoConLabel("\u2709 Correo Electr\u00f3nico", txtCorreo));
+        pForm.add(crearCampoConLabel("\uD83D\uDD12 Contrase\u00f1a Temporal", txtPass));
+        pForm.add(crearCampoConLabel("\uD83D\uDEE1 Rol de Sistema", cbRol));
+        pForm.add(crearCampoConLabel("\uD83D\uDCBC Cargo / Dependencia", cbCargo));
+
+        JPanel pAprendiz = new JPanel(new GridLayout(1, 3, 10, 0));
+        pAprendiz.setBackground(Color.WHITE);
+        pAprendiz.setBorder(new EmptyBorder(0, 30, 20, 30));
+        
+        JTextField txtFicha = new JTextField();
+        JTextField txtProg = new JTextField();
+        JComboBox<String> cbHorario = new JComboBox<>(new String[]{"Ma\u00f1ana", "Tarde", "Noche"});
+        
+        pAprendiz.add(crearCampoConLabel("Ficha", txtFicha));
+        pAprendiz.add(crearCampoConLabel("Programa", txtProg));
+        pAprendiz.add(crearCampoConLabel("Horario", cbHorario));
+        pAprendiz.setVisible(false);
+
+        cbCargo.addActionListener(e -> {
+            boolean isAprendiz = "Aprendiz".equals(cbCargo.getSelectedItem());
+            pAprendiz.setVisible(isAprendiz);
+            d.revalidate();
+            d.repaint();
+        });
+
+        JPanel pBottom = new JPanel(new BorderLayout());
+        pBottom.setBackground(Color.WHITE);
+        pBottom.setBorder(new EmptyBorder(10, 30, 30, 30));
+
+        JButton btnGuardar = new JButton("\uD83D\uDCBE Guardar");
+        btnGuardar.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        btnGuardar.setForeground(Color.WHITE);
+        btnGuardar.setBackground(new Color(57, 169, 0));
+        btnGuardar.setFocusPainted(false);
+        btnGuardar.setBorder(new EmptyBorder(12, 0, 12, 0));
+        btnGuardar.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        
+        btnGuardar.addActionListener(e -> {
+            String nombre = txtNombre.getText().trim();
+            String doc = txtDoc.getText().trim();
+            String correo = txtCorreo.getText().trim();
+            String pass = new String(txtPass.getPassword()).trim();
+            String rol = (String) cbRol.getSelectedItem();
+            String cargo = (String) cbCargo.getSelectedItem();
+            
+            if (nombre.isEmpty() || correo.isEmpty() || doc.isEmpty() || "Seleccione...".equals(cargo)) {
+                JOptionPane.showMessageDialog(d, "Nombre, Correo, Documento y Cargo son obligatorios.", "Advertencia", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            if (pass.isEmpty()) pass = doc;
+
+            try {
+                Usuario nuevo = new Usuario();
+                nuevo.setNombre(nombre);
+                nuevo.setCorreo(correo);
+                nuevo.setDocumento(doc);
+                nuevo.setCargo(cargo);
+                nuevo.setContrasenaHash(ContrasenaUtil.hashear(pass));
+                nuevo.setCorreoVerificado(true);
+                nuevo.setRolId("Admin".equals(rol) ? 1 : 2);
+                
+                if ("Aprendiz".equals(cargo)) {
+                    nuevo.setFicha(txtFicha.getText().trim());
+                    nuevo.setPrograma(txtProg.getText().trim());
+                    nuevo.setHorario((String) cbHorario.getSelectedItem());
+                }
+
+                UsuarioDAO.crear(nuevo);
+                d.dispose();
+                JOptionPane.showMessageDialog(this, "Usuario agregado exitosamente.", "\u00c9xito", JOptionPane.INFORMATION_MESSAGE);
+                cargarDatos();
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(d, "Error al guardar el usuario: " + ex.getMessage(), "Error BD", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        
+        pBottom.add(btnGuardar, BorderLayout.CENTER);
+
+        JPanel centerPanel = new JPanel(new BorderLayout());
+        centerPanel.setBackground(Color.WHITE);
+        centerPanel.add(pForm, BorderLayout.CENTER);
+        centerPanel.add(pAprendiz, BorderLayout.SOUTH);
+
+        d.add(header, BorderLayout.NORTH);
+        d.add(centerPanel, BorderLayout.CENTER);
+        d.add(pBottom, BorderLayout.SOUTH);
+        d.setVisible(true);
+    }
+
+    private JPanel crearCampoConLabel(String labelText, JComponent field) {
+        JPanel p = new JPanel(new BorderLayout(0, 5));
+        p.setBackground(Color.WHITE);
+        JLabel lbl = new JLabel(labelText);
+        lbl.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        lbl.setForeground(new Color(80, 80, 80));
+        
+        if (field instanceof JTextField) {
+            ((JTextField) field).setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(220, 220, 220)),
+                new EmptyBorder(8, 10, 8, 10)
+            ));
+            field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        } else if (field instanceof JComboBox) {
+            field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+            field.setBackground(Color.WHITE);
+        }
+        
+        p.add(lbl, BorderLayout.NORTH);
+        p.add(field, BorderLayout.CENTER);
+        return p;
     }
 
     private JTextField field(String val) {
