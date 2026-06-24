@@ -51,14 +51,17 @@ public class DashboardView extends BaseAuthView {
         JPanel sidebarWrapper = new JPanel(new BorderLayout()) {
             @Override
             protected void paintComponent(Graphics g) {
-                g.setColor(new Color(255, 255, 255, 220));
-                g.fillRect(0, 0, getWidth(), getHeight());
-                g.setColor(new Color(210, 220, 232));
-                g.fillRect(getWidth() - 1, 0, 1, getHeight());
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(new Color(255, 255, 255, 180));
+                g2.fillRect(0, 0, getWidth(), getHeight());
+                g2.setColor(new Color(255, 255, 255, 255));
+                g2.fillRect(getWidth() - 1, 0, 1, getHeight());
+                g2.dispose();
             }
         };
         sidebarWrapper.setOpaque(false);
-        sidebarWrapper.setPreferredSize(new Dimension(210, 1));
+        sidebarWrapper.setPreferredSize(new Dimension(280, 1));
         sidebarWrapper.add(buildSidebar(), BorderLayout.CENTER);
 
         // Main cards container
@@ -83,36 +86,79 @@ public class DashboardView extends BaseAuthView {
         return root;
     }
 
+    private JPanel buildSidebarHeader() {
+        JPanel header = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setPaint(new GradientPaint(0, 0, new Color(57, 169, 0), getWidth(), getHeight(), new Color(30, 115, 0)));
+                g2.fillRect(0, 0, getWidth(), getHeight());
+                g2.dispose();
+            }
+        };
+        header.setOpaque(false);
+        header.setLayout(new BoxLayout(header, BoxLayout.Y_AXIS));
+        header.setBorder(new EmptyBorder(22, 18, 20, 18));
+        header.setMaximumSize(new Dimension(Integer.MAX_VALUE, 90));
+
+        JLabel logo = new JLabel("SENA");
+        logo.setFont(new Font("Segoe UI", Font.BOLD, 26));
+        logo.setForeground(Color.WHITE);
+        logo.setAlignmentX(LEFT_ALIGNMENT);
+
+        JLabel sub = new JLabel("<html><span style='color:rgba(255,255,255,0.75); font-size:10px;'>Centro de Gestión Agroempresarial</span></html>");
+        sub.setFont(new Font("Segoe UI", Font.PLAIN, 10));
+        sub.setForeground(new Color(255, 255, 255, 180));
+        sub.setAlignmentX(LEFT_ALIGNMENT);
+
+        header.add(logo);
+        header.add(Box.createVerticalStrut(2));
+        header.add(sub);
+        return header;
+    }
+
     // ── SIDEBAR (ancho fijo, con scroll) ────────────────────────────────────
     private JScrollPane buildSidebar() {
         JPanel inner = new JPanel();
         inner.setOpaque(false);
         inner.setLayout(new BoxLayout(inner, BoxLayout.Y_AXIS));
-        inner.setBorder(new EmptyBorder(16, 10, 16, 10));
+        inner.setBorder(new EmptyBorder(0, 0, 16, 0));
+
+        // ── Header SENA ──
+        inner.add(buildSidebarHeader());
+        inner.add(Box.createVerticalStrut(10));
+
+        JPanel menuWrapper = new JPanel();
+        menuWrapper.setOpaque(false);
+        menuWrapper.setLayout(new BoxLayout(menuWrapper, BoxLayout.Y_AXIS));
+        menuWrapper.setBorder(new EmptyBorder(0, 10, 0, 10));
 
         // ── Menú items ──
-        inner.add(menuItem("Panel General",         true,  MenuIcon.HOME,    e -> showCard("general"),         false));
-        inner.add(Box.createVerticalStrut(4));
-        inner.add(menuItem("Escáner QR",            false, MenuIcon.QR,      e -> showCard("scanner"),         false));
-        inner.add(Box.createVerticalStrut(4));
-        inner.add(menuItem("Pases Manuales/QR",     false, MenuIcon.PASSES,  e -> showCard("passes"),          false));
-        inner.add(Box.createVerticalStrut(4));
-        inner.add(menuItem("Gestión de Perfiles",   false, MenuIcon.USERS,   e -> showCard("profiles"),        false));
-        inner.add(Box.createVerticalStrut(4));
-        inner.add(menuItem("Reporte Usuarios",      false, MenuIcon.REPORT,  e -> showCard("reports"),         false));
-        inner.add(Box.createVerticalStrut(4));
-        inner.add(menuItem("Historial de Clases",   false, MenuIcon.HISTORY, e -> showCard("classes"),         false));
-        inner.add(Box.createVerticalStrut(4));
-        inner.add(menuItem("Mi Ficha",              false, MenuIcon.CARD,    e -> showCard("card"),            false));
-        inner.add(Box.createVerticalStrut(4));
-        inner.add(menuItem("Comunicados",           false, MenuIcon.MESSAGE, e -> showCard("messages"),        false));
-        inner.add(Box.createVerticalStrut(4));
-        inner.add(menuItem("Mi Perfil",             false, MenuIcon.CARD,    e -> showCard("profile"),         false));
-        inner.add(Box.createVerticalStrut(4));
-        inner.add(menuItem("Historial de Cambios",  false, MenuIcon.CLOCK,   e -> showCard("changes"),         false));
-        inner.add(Box.createVerticalStrut(4));
-        inner.add(menuItem("Respaldos del Sistema", false, MenuIcon.BACKUPS,  e -> showCard("backups"),         false));
-        inner.add(Box.createVerticalGlue());
+        menuWrapper.add(menuItem("Panel General",         true,  MenuIcon.HOME,    e -> showCard("general"),         false));
+        menuWrapper.add(Box.createVerticalStrut(4));
+        menuWrapper.add(menuItem("Escáner QR",            false, MenuIcon.QR,      e -> showCard("scanner"),         false));
+        menuWrapper.add(Box.createVerticalStrut(4));
+        menuWrapper.add(menuItem("Pases Manuales/QR",     false, MenuIcon.PASSES,  e -> showCard("passes"),          false));
+        menuWrapper.add(Box.createVerticalStrut(4));
+        menuWrapper.add(menuItem("Gestión de Perfiles",   false, MenuIcon.USERS,   e -> showCard("profiles"),        false));
+        menuWrapper.add(Box.createVerticalStrut(4));
+        menuWrapper.add(menuItem("Reporte Usuarios",      false, MenuIcon.REPORT,  e -> showCard("reports"),         false));
+        menuWrapper.add(Box.createVerticalStrut(4));
+        menuWrapper.add(menuItem("Historial de Clases",   false, MenuIcon.HISTORY, e -> showCard("classes"),         false));
+        menuWrapper.add(Box.createVerticalStrut(4));
+        menuWrapper.add(menuItem("Mi Ficha",              false, MenuIcon.CARD,    e -> showCard("card"),            false));
+        menuWrapper.add(Box.createVerticalStrut(4));
+        menuWrapper.add(menuItem("Comunicados",           false, MenuIcon.MESSAGE, e -> showCard("messages"),        false));
+        menuWrapper.add(Box.createVerticalStrut(4));
+        menuWrapper.add(menuItem("Mi Perfil",             false, MenuIcon.CARD,    e -> showCard("profile"),         false));
+        menuWrapper.add(Box.createVerticalStrut(4));
+        menuWrapper.add(menuItem("Historial de Cambios",  false, MenuIcon.CLOCK,   e -> showCard("changes"),         false));
+        menuWrapper.add(Box.createVerticalStrut(4));
+        menuWrapper.add(menuItem("Respaldos del Sistema", false, MenuIcon.BACKUPS,  e -> showCard("backups"),         false));
+        menuWrapper.add(Box.createVerticalGlue());
+
+        inner.add(menuWrapper);
 
         JScrollPane scroll = new JScrollPane(inner,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
@@ -121,9 +167,9 @@ public class DashboardView extends BaseAuthView {
         scroll.setOpaque(false);
         scroll.getViewport().setOpaque(false);
         scroll.getViewport().setBackground(new Color(255, 255, 255, 0));
-        scroll.setBackground(new Color(255, 255, 255, 215));
+        scroll.setBackground(new Color(255, 255, 255, 0));
         scroll.getVerticalScrollBar().setUnitIncrement(16);
-        scroll.setPreferredSize(new Dimension(220, 1));
+        scroll.setPreferredSize(new Dimension(280, 1));
         return scroll;
     }
 
@@ -193,21 +239,29 @@ public class DashboardView extends BaseAuthView {
             @Override
             protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
-                g2.setColor(new Color(255, 255, 255, 235));
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(new Color(255, 255, 255, 205));
                 g2.fillRect(0, 0, getWidth(), getHeight());
-                g2.setColor(new Color(220, 228, 238, 160));
-                g2.fillRect(0, getHeight() - 1, getWidth(), 1);
+                // gradient bottom border line
+                g2.setPaint(new GradientPaint(0, getHeight() - 2, new Color(57, 169, 0, 120), getWidth(), getHeight() - 2, new Color(57, 169, 0, 0)));
+                g2.fillRect(0, getHeight() - 2, getWidth(), 2);
                 g2.dispose();
             }
         };
         bar.setOpaque(false);
-        bar.setBorder(new EmptyBorder(10, 20, 10, 20));
+        bar.setBorder(new EmptyBorder(14, 24, 14, 24));
 
-        // Izquierda: solo nombre de la vista
-        JLabel title = new JLabel("Panel General");
-        title.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        title.setForeground(new Color(40, 52, 68));
+        // Izquierda: nombre de la vista con punto verde
+        JLabel title = new JLabel("● Panel General");
+        title.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        title.setForeground(new Color(30, 42, 60));
         bar.add(title, BorderLayout.WEST);
+
+        // Derecha: texto identificador del sistema
+        JLabel sys = new JLabel("Sistema de Gestión de Acceso · SENA");
+        sys.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        sys.setForeground(new Color(120, 135, 152));
+        bar.add(sys, BorderLayout.EAST);
 
         return bar;
     }
@@ -297,11 +351,11 @@ public class DashboardView extends BaseAuthView {
             protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(new Color(255, 255, 255, 220));
+                g2.setColor(new Color(255, 255, 255, 160));
                 g2.fillRoundRect(0, 0, getWidth() - 6, getHeight() - 6, 18, 18);
                 g2.setColor(new Color(accent.getRed(), accent.getGreen(), accent.getBlue(), 60));
                 g2.fillRoundRect(0, 0, 5, getHeight() - 6, 4, 4);
-                g2.setColor(new Color(220, 228, 238, 130));
+                g2.setColor(new Color(255, 255, 255, 255));
                 g2.drawRoundRect(0, 0, getWidth() - 7, getHeight() - 7, 18, 18);
                 g2.dispose();
             }
@@ -337,9 +391,9 @@ public class DashboardView extends BaseAuthView {
             protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(new Color(255, 255, 255, 220));
+                g2.setColor(new Color(255, 255, 255, 160));
                 g2.fillRoundRect(0, 0, getWidth() - 8, getHeight() - 8, 20, 20);
-                g2.setColor(new Color(220, 228, 238, 130));
+                g2.setColor(new Color(255, 255, 255, 255));
                 g2.drawRoundRect(0, 0, getWidth() - 9, getHeight() - 9, 20, 20);
                 g2.dispose();
             }
@@ -409,9 +463,9 @@ public class DashboardView extends BaseAuthView {
             protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(new Color(255, 255, 255, 220));
+                g2.setColor(new Color(255, 255, 255, 160));
                 g2.fillRoundRect(0, 0, getWidth() - 8, getHeight() - 8, 20, 20);
-                g2.setColor(new Color(220, 228, 238, 130));
+                g2.setColor(new Color(255, 255, 255, 255));
                 g2.drawRoundRect(0, 0, getWidth() - 9, getHeight() - 9, 20, 20);
                 g2.dispose();
             }

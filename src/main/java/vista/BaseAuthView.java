@@ -78,11 +78,24 @@ abstract class BaseAuthView extends JFrame {
     }
 
     protected JPanel buildRoot(JPanel left, JPanel form) {
-        JPanel root = new JPanel(new BorderLayout(34, 0));
+        JPanel root = new JPanel(new GridBagLayout());
         root.setOpaque(false);
-        root.setBorder(new EmptyBorder(42, 56, 42, 56));
-        root.add(left, BorderLayout.CENTER);
-        root.add(form, BorderLayout.EAST);
+        root.setBorder(new EmptyBorder(40, 40, 40, 40));
+        
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weightx = 0.5;
+        gbc.weighty = 1.0;
+        gbc.insets = new java.awt.Insets(0, 20, 0, 20);
+        
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        root.add(left, gbc);
+        
+        gbc.gridx = 1;
+        gbc.weightx = 0.0;
+        root.add(form, gbc);
+        
         return root;
     }
 
@@ -92,17 +105,17 @@ abstract class BaseAuthView extends JFrame {
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setBorder(new EmptyBorder(72, 18, 72, 18));
 
-        ThemeLabel logo = label("<html><div style='color:#f69514;'><b>SENA</b><br><span style='font-size:36px;'>\u26A8</span></div></html>", 32, Kind.LOGO);
+        ThemeLabel logo = label("SENA", 42, Kind.LOGO);
         panel.add(logo);
         panel.add(Box.createVerticalStrut(30));
-        ThemeLabel titleGroup = new ThemeLabel("", 52, Kind.LEFT) {
+        ThemeLabel titleGroup = new ThemeLabel("", 48, Kind.LEFT) {
             @Override
             public void applyTheme(boolean dark) {
                 String cNormal = dark ? "#f0f4f8" : "#212b43";
-                String cGreen = "#3eaa00";
+                String cGreen = "#39a900";
                 String cOrange = "#f69514";
-                setText("<html><div style='line-height: 0.9;'>" +
-                        "<span style='color:" + cNormal + ";'>Únete al</span><br>" +
+                setText("<html><div style='line-height: 1.1; font-weight: 800;'>" +
+                        "<span style='color:" + cNormal + ";'>Únete al </span>" +
                         "<span style='color:" + cGreen + ";'>Centro de Gestión</span><br>" +
                         "<span style='color:" + cOrange + ";'>Agroempresarial</span><br>" +
                         "<span style='color:" + cGreen + ";'>del Oriente</span>" +
@@ -135,46 +148,17 @@ abstract class BaseAuthView extends JFrame {
         card.setLayout(new GridBagLayout());
         card.setBorder(new EmptyBorder(24, 30, 24, 30));
         GridBagConstraints g = new GridBagConstraints();
-        g.gridx = 0;
-        g.fill = GridBagConstraints.HORIZONTAL;
+        g.gridx  = 0;
+        g.gridy  = 0;   // ← fijar explícito para evitar superposición
+        g.fill   = GridBagConstraints.HORIZONTAL;
         g.weightx = 1;
+        g.anchor = GridBagConstraints.NORTH;
         composer.accept(card, g);
         register(card);
         return card;
     }
 
-    protected JPanel headerBar(String title, Runnable themeAction) {
-        JPanel header = new JPanel(new BorderLayout());
-        header.setOpaque(false);
-        header.setPreferredSize(new Dimension(420, 48));
 
-        ThemeToggleButton theme = new ThemeToggleButton(themeAction);
-        register(theme);
-        header.add(theme, BorderLayout.EAST);
-        return header;
-    }
-
-    protected JPanel badge(String text) {
-        JPanel panel = new JPanel(new BorderLayout()) {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2 = (Graphics2D) g.create();
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(themeToggleFill());
-                g2.fillOval(0, 0, getWidth(), getHeight());
-                g2.dispose();
-                super.paintComponent(g);
-            }
-        };
-        panel.setOpaque(false);
-        panel.setPreferredSize(new Dimension(86, 86));
-        panel.setMaximumSize(new Dimension(86, 86));
-
-        ThemeLabel icon = label(text, 40, Kind.ICON);
-        icon.setHorizontalAlignment(SwingConstants.CENTER);
-        panel.add(icon, BorderLayout.CENTER);
-        return panel;
-    }
 
     protected ThemeLabel title(String text, int size) {
         return label(text, size, Kind.TITLE);
@@ -260,11 +244,11 @@ abstract class BaseAuthView extends JFrame {
     }
 
     private Color bgStart() {
-        return darkMode ? new Color(14, 18, 28) : new Color(235, 246, 233);
+        return darkMode ? new Color(2, 6, 23) : new Color(240, 253, 244);
     }
 
     private Color bgEnd() {
-        return darkMode ? new Color(22, 27, 39) : new Color(247, 250, 255);
+        return darkMode ? new Color(10, 82, 37) : new Color(224, 242, 254);
     }
 
     private Color cardFill() {
@@ -280,11 +264,11 @@ abstract class BaseAuthView extends JFrame {
     }
 
     private Color titleColor() {
-        return darkMode ? new Color(235, 240, 248) : new Color(60, 70, 86);
+        return new Color(30, 42, 58);
     }
 
     private Color subtitleColor() {
-        return darkMode ? new Color(170, 181, 198) : new Color(120, 130, 140);
+        return new Color(70, 82, 98);
     }
 
     private Color inputFill() {
@@ -304,11 +288,11 @@ abstract class BaseAuthView extends JFrame {
     }
 
     private Color buttonStart() {
-        return darkMode ? new Color(93, 203, 77) : new Color(112, 196, 12);
+        return darkMode ? new Color(46, 204, 113) : new Color(46, 204, 113);
     }
 
     private Color buttonEnd() {
-        return darkMode ? new Color(34, 154, 79) : new Color(63, 167, 0);
+        return darkMode ? new Color(39, 174, 96) : new Color(39, 174, 96);
     }
 
     private Color linkColor() {
@@ -320,7 +304,7 @@ abstract class BaseAuthView extends JFrame {
     }
 
     private Color themeToggleFill() {
-        return darkMode ? new Color(40, 48, 66) : new Color(235, 246, 233);
+        return darkMode ? new Color(255, 255, 255, 15) : new Color(255, 255, 255, 180);
     }
 
     private Color themeToggleText() {
@@ -328,7 +312,7 @@ abstract class BaseAuthView extends JFrame {
     }
 
     private Color accentGreen() {
-        return new Color(62, 170, 0);
+        return new Color(57, 169, 0); // SENA official green
     }
 
     private Color accentOrange() {
@@ -354,7 +338,7 @@ abstract class BaseAuthView extends JFrame {
         public void applyTheme(boolean darkMode) {
             switch (kind) {
                 case LOGO:
-                    setForeground(new Color(255, 122, 24));
+                    setForeground(accentGreen());
                     break;
                 case LEFT:
                     if (getText().contains("Centro de Gestión")) {
@@ -514,11 +498,22 @@ abstract class BaseAuthView extends JFrame {
 
             Graphics2D g3 = (Graphics2D) g.create();
             g3.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g3.setFont(new Font("Segoe UI", Font.BOLD, 22));
-            g3.setColor(placeholderText());
-            String eyeText = showPassword ? "\u2298" : "\u25CE"; // Eye symbols approximation
-            int tw = g3.getFontMetrics().stringWidth(eyeText);
-            g3.drawString(eyeText, getWidth() - tw - 20, getHeight() / 2 + 8);
+            // Draw simple eye icon as arc + circle
+            int cx = getWidth() - 28;
+            int cy = getHeight() / 2;
+            int rOuter = 9;
+            g3.setColor(showEyeHover ? new Color(57, 169, 0) : new Color(140, 150, 165));
+            g3.setStroke(new java.awt.BasicStroke(1.8f));
+            if (showPassword) {
+                // Open eye: two arcs forming eye shape
+                g3.drawArc(cx - rOuter, cy - rOuter / 2, rOuter * 2, rOuter, 0, 180);
+                g3.drawArc(cx - rOuter, cy - rOuter / 2, rOuter * 2, rOuter, 180, 180);
+                g3.fillOval(cx - 3, cy - 3, 6, 6);
+            } else {
+                // Closed eye: just a line with small dashes
+                g3.drawArc(cx - rOuter, cy - rOuter / 2, rOuter * 2, rOuter, 0, 180);
+                g3.drawLine(cx - rOuter, cy + 1, cx + rOuter, cy + 1);
+            }
             g3.dispose();
         }
     }
@@ -542,13 +537,14 @@ abstract class BaseAuthView extends JFrame {
         ThemeButton(String text) {
             super(text);
             setForeground(Color.WHITE);
-            setFont(new Font("Segoe UI", Font.BOLD, 20));
+            setFont(new Font("Segoe UI", Font.BOLD, 18));
             setFocusPainted(false);
             setBorderPainted(false);
             setContentAreaFilled(false);
+            setHorizontalAlignment(SwingConstants.CENTER);
             setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             setBorder(new EmptyBorder(8, 26, 8, 26));
-            setPreferredSize(new Dimension(420, 66));
+            setPreferredSize(new Dimension(420, 60));
         }
 
         @Override
@@ -562,10 +558,8 @@ abstract class BaseAuthView extends JFrame {
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             int w = getWidth();
             int h = getHeight();
-            g2.setColor(new Color(0, 0, 0, darkMode ? 55 : 25));
-            g2.fillRoundRect(5, 8, w - 10, h - 12, 26, 26);
             g2.setPaint(new GradientPaint(0, 0, buttonStart(), 0, h, buttonEnd()));
-            g2.fillRoundRect(0, 0, w - 8, h - 8, 26, 26);
+            g2.fillRoundRect(0, 0, w - 4, h - 4, 24, 24);
             g2.dispose();
             super.paintComponent(g);
         }
@@ -694,20 +688,20 @@ abstract class BaseAuthView extends JFrame {
         private final List<Node> nodes = new ArrayList<Node>();
         private final Random random = new Random();
         private boolean dark;
-        private Color lightStart = new Color(235, 246, 233);
-        private Color lightEnd = new Color(247, 250, 255);
-        private Color lightLine = new Color(155, 219, 135, 58);
-        private Color lightPoint = new Color(126, 206, 96, 160);
-        private Color lightGlow = new Color(126, 206, 96, 22);
-        private Color darkStart = new Color(14, 18, 28);
-        private Color darkEnd = new Color(22, 27, 39);
-        private Color darkLine = new Color(120, 220, 160, 46);
-        private Color darkPoint = new Color(130, 240, 180, 150);
-        private Color darkGlow = new Color(130, 240, 180, 34);
+        private Color lightStart = new Color(240, 253, 244);
+        private Color lightEnd = new Color(224, 242, 254);
+        private Color lightLine = new Color(46, 204, 113, 40);
+        private Color lightPoint = new Color(46, 204, 113, 180);
+        private Color lightGlow = new Color(46, 204, 113, 20);
+        private Color darkStart = new Color(2, 6, 23);
+        private Color darkEnd = new Color(10, 82, 37);
+        private Color darkLine = new Color(255, 255, 255, 30);
+        private Color darkPoint = new Color(255, 255, 255, 150);
+        private Color darkGlow = new Color(255, 255, 255, 15);
 
         MovingBackgroundPanel() {
             setOpaque(true);
-            for (int i = 0; i < 38; i++) {
+            for (int i = 0; i < 60; i++) {
                 nodes.add(new Node());
             }
             Timer timer = new Timer(33, new java.awt.event.ActionListener() {
@@ -795,8 +789,8 @@ abstract class BaseAuthView extends JFrame {
         private class Node {
             double x = random.nextDouble() * 1400;
             double y = random.nextDouble() * 900;
-            double vx = (random.nextDouble() * 1.1) + 0.25;
-            double vy = (random.nextDouble() * 1.1) + 0.25;
+            double vx = (random.nextDouble() * 1.6) - 0.8;
+            double vy = (random.nextDouble() * 1.6) - 0.8;
 
             Node() {
                 if (random.nextBoolean()) {

@@ -47,7 +47,7 @@ public class LoginView extends BaseAuthView {
         };
         register(signup);
 
-        JButton loginBtn = action("Ingresar de Forma Segura ➔");
+        JButton loginBtn = action("Ingresar de Forma Segura");
         loginBtn.addActionListener(e -> {
             String id = user.getText().trim();
             String pw = new String(pass.getPassword()).trim();
@@ -111,9 +111,7 @@ public class LoginView extends BaseAuthView {
             }
         });
 
-        return buildCard(620, 760, (card, g) -> {
-            addRow(card, g, headerBar("login", () -> toggleTheme()), 0, 10);
-            addRow(card, g, badge("🛡"), 0, 8);
+        return buildCard(620, 640, (card, g) -> {
             addRow(card, g, title("Bienvenido", 36), 12, 8);
             addRow(card, g, subtitle("Acceso unificado al sistema de identidad institucional."), 0, 18);
             addRow(card, g, user, 6, 16);
@@ -123,7 +121,7 @@ public class LoginView extends BaseAuthView {
             row.setOpaque(false);
             row.add(remember, BorderLayout.WEST);
             row.add(forgot,   BorderLayout.EAST);
-            addRow(card, g, row, 8, 18);
+            addRow(card, g, row, 8, 24);
 
             addRow(card, g, loginBtn, 8, 18);
             addRow(card, g, signup, 18, 0);

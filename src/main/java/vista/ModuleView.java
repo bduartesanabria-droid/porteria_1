@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
@@ -34,60 +35,88 @@ abstract class ModuleView extends JPanel {
     }
 
     private JPanel buildRoot() {
-        JPanel root = new JPanel(new BorderLayout(0, 18));
+        JPanel root = new JPanel(new BorderLayout(0, 0));
         root.setOpaque(false);
-        root.setBorder(new EmptyBorder(22, 24, 22, 24));
 
+        // ── Top Bar premium ──
+        root.add(buildTopBar(), BorderLayout.NORTH);
+
+        // ── Contenido scrollable ──
+        JPanel content = new JPanel(new BorderLayout(0, 18));
+        content.setOpaque(false);
+        content.setBorder(new EmptyBorder(24, 24, 24, 24));
+
+        // Header card con título y subtítulo del módulo
         BaseAuthView.CardPanel header = mainFrame.new CardPanel();
         mainFrame.register(header);
         header.setLayout(new BorderLayout(20, 0));
-        header.setBorder(new EmptyBorder(18, 22, 18, 22));
+        header.setBorder(new EmptyBorder(20, 24, 20, 24));
 
         JPanel left = new JPanel();
         left.setOpaque(false);
         left.setLayout(new BoxLayout(left, BoxLayout.Y_AXIS));
 
-        BaseAuthView.ThemeLabel title = mainFrame.title(moduleTitle, 30);
+        BaseAuthView.ThemeLabel title = mainFrame.title(moduleTitle, 28);
         title.setHorizontalAlignment(SwingConstants.LEFT);
         mainFrame.register(title);
+
         BaseAuthView.ThemeLabel subtitle = mainFrame.subtitle(moduleSubtitle);
         subtitle.setHorizontalAlignment(SwingConstants.LEFT);
         mainFrame.register(subtitle);
+
         left.add(title);
         left.add(Box.createVerticalStrut(6));
         left.add(subtitle);
-
         header.add(left, BorderLayout.CENTER);
-        header.add(buildTopActions(), BorderLayout.EAST);
-        root.add(header, BorderLayout.NORTH);
 
+        // Body card principal
         BaseAuthView.CardPanel body = mainFrame.new CardPanel();
         mainFrame.register(body);
         body.setLayout(new GridBagLayout());
-        body.setBorder(new EmptyBorder(28, 28, 28, 28));
+        body.setBorder(new EmptyBorder(40, 28, 40, 28));
 
         GridBagConstraints g = new GridBagConstraints();
-        g.gridx = 0;
+        g.gridx   = 0;
         g.weightx = 1;
-        g.fill = GridBagConstraints.HORIZONTAL;
-        g.insets = new Insets(0, 0, 16, 0);
+        g.fill    = GridBagConstraints.HORIZONTAL;
+        g.insets  = new Insets(0, 0, 18, 0);
 
-        JLabel badge = new JLabel();
-        badge.setOpaque(true);
-        badge.setPreferredSize(new Dimension(84, 84));
-        badge.setMinimumSize(new Dimension(84, 84));
-        badge.setMaximumSize(new Dimension(84, 84));
-        badge.setHorizontalAlignment(SwingConstants.CENTER);
-        badge.setVerticalAlignment(SwingConstants.CENTER);
-        badge.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        badge.setBackground(new Color(62, 170, 0, 26));
-        badge.setForeground(new Color(62, 170, 0));
-        badge.setText("•");
-        body.add(badge, g);
+        // Ícono decorativo circular verde
+        JPanel iconCircle = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics gr) {
+                Graphics2D g2 = (Graphics2D) gr.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setPaint(new GradientPaint(0, 0, new Color(57, 169, 0, 40), getWidth(), getHeight(), new Color(57, 169, 0, 10)));
+                g2.fillOval(0, 0, getWidth() - 2, getHeight() - 2);
+                g2.setColor(new Color(57, 169, 0, 80));
+                g2.drawOval(0, 0, getWidth() - 3, getHeight() - 3);
+                g2.dispose();
+            }
+        };
+        iconCircle.setOpaque(false);
+        iconCircle.setPreferredSize(new Dimension(72, 72));
+        iconCircle.setMaximumSize(new Dimension(72, 72));
+
+        JLabel iconLabel = new JLabel("\u2699", SwingConstants.CENTER);
+        iconLabel.setFont(new Font("Segoe UI Symbol", Font.PLAIN, 30));
+        iconLabel.setForeground(new Color(57, 169, 0));
+        iconCircle.setLayout(new java.awt.GridBagLayout());
+        iconCircle.add(iconLabel);
+
+        JPanel iconWrapper = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER));
+        iconWrapper.setOpaque(false);
+        iconWrapper.add(iconCircle);
+        body.add(iconWrapper, g);
 
         g.gridy++;
-        JLabel hint = new JLabel("<html><div style='text-align:center;'>Esta pantalla ya está creada como estructura visual.<br>Luego aquí conectamos la base de datos y la lógica MVC.</div></html>");
-        hint.setFont(new Font("Segoe UI", Font.PLAIN, 18));
+        JLabel hint = new JLabel("<html><div style='text-align:center;'>" +
+                "<b style='color:#212b43; font-size:15px;'>M\u00f3dulo en desarrollo</b><br>" +
+                "<span style='color:#6c7a8d; font-size:12px;'>" +
+                "Esta pantalla est\u00e1 lista como estructura visual.<br>" +
+                "Pr\u00f3ximamente se conectar\u00e1 con la base de datos y la l\u00f3gica MVC.</span>" +
+                "</div></html>");
+        hint.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         hint.setForeground(new Color(92, 104, 120));
         hint.setHorizontalAlignment(SwingConstants.CENTER);
         body.add(hint, g);
@@ -96,34 +125,40 @@ abstract class ModuleView extends JPanel {
         g.insets = new Insets(22, 0, 0, 0);
         body.add(buildActionRow(), g);
 
-        root.add(body, BorderLayout.CENTER);
+        content.add(header, BorderLayout.NORTH);
+        content.add(body,   BorderLayout.CENTER);
+        root.add(content,  BorderLayout.CENTER);
         return root;
     }
 
-    private JPanel buildTopActions() {
-        JPanel panel = new JPanel();
-        panel.setOpaque(false);
-        panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
-
-        BaseAuthView.ThemeToggleButton theme = mainFrame.new ThemeToggleButton(new Runnable() {
+    // ── Top Bar premium (idéntico al del Dashboard) ───────────────────────────
+    private JPanel buildTopBar() {
+        JPanel bar = new JPanel(new BorderLayout(12, 0)) {
             @Override
-            public void run() {
-                mainFrame.toggleTheme();
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(new Color(255, 255, 255, 205));
+                g2.fillRect(0, 0, getWidth(), getHeight());
+                g2.setPaint(new GradientPaint(0, getHeight() - 2, new Color(57, 169, 0, 120), getWidth(), getHeight() - 2, new Color(57, 169, 0, 0)));
+                g2.fillRect(0, getHeight() - 2, getWidth(), 2);
+                g2.dispose();
             }
-        });
-        mainFrame.register(theme);
-        panel.add(theme);
-        panel.add(Box.createHorizontalStrut(12));
+        };
+        bar.setOpaque(false);
+        bar.setBorder(new EmptyBorder(14, 24, 14, 24));
 
-        PillButton back = new PillButton("Volver al menú", new Color(62, 170, 0));
-        back.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                mainFrame.showCard("general");
-            }
-        });
-        panel.add(back);
-        return panel;
+        JLabel title = new JLabel("\u25cf " + moduleTitle);
+        title.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        title.setForeground(new Color(30, 42, 60));
+        bar.add(title, BorderLayout.WEST);
+
+        JLabel sys = new JLabel("Sistema de Gesti\u00f3n de Acceso \u00b7 SENA");
+        sys.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        sys.setForeground(new Color(120, 135, 152));
+        bar.add(sys, BorderLayout.EAST);
+
+        return bar;
     }
 
     private JPanel buildActionRow() {
@@ -131,14 +166,11 @@ abstract class ModuleView extends JPanel {
         row.setOpaque(false);
         row.setLayout(new BoxLayout(row, BoxLayout.X_AXIS));
 
-        JLabel left = new JLabel("Módulo: " + moduleTitle);
-        left.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        left.setForeground(new Color(92, 104, 120));
-        row.add(left);
         row.add(Box.createHorizontalGlue());
 
-        PillButton action = new PillButton("Acción pendiente", new Color(112, 196, 12));
-        row.add(action);
+        PillButton back = new PillButton("\u2190 Volver al Panel", new Color(57, 169, 0));
+        back.addActionListener(e -> mainFrame.showCard("general"));
+        row.add(back);
         return row;
     }
 
@@ -148,16 +180,16 @@ abstract class ModuleView extends JPanel {
         PillButton(String text, Color fill) {
             super(text);
             this.fill = fill;
-            setFont(new Font("Segoe UI", Font.BOLD, 14));
+            setFont(new Font("Segoe UI", Font.BOLD, 13));
             setForeground(Color.WHITE);
             setFocusPainted(false);
             setBorderPainted(false);
             setContentAreaFilled(false);
             setOpaque(false);
-            setBorder(new EmptyBorder(9, 18, 9, 18));
-            setPreferredSize(new Dimension(170, 40));
-            setMinimumSize(new Dimension(170, 40));
-            setMaximumSize(new Dimension(170, 40));
+            setBorder(new EmptyBorder(10, 22, 10, 22));
+            setPreferredSize(new Dimension(180, 42));
+            setMinimumSize(new Dimension(180, 42));
+            setMaximumSize(new Dimension(180, 42));
             setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR));
         }
 
@@ -165,10 +197,10 @@ abstract class ModuleView extends JPanel {
         protected void paintComponent(Graphics g) {
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g2.setColor(new Color(0, 0, 0, 26));
-            g2.fillRoundRect(3, 4, getWidth() - 6, getHeight() - 6, 18, 18);
-            g2.setColor(fill);
-            g2.fillRoundRect(0, 0, getWidth() - 6, getHeight() - 6, 18, 18);
+            g2.setColor(new Color(0, 0, 0, 22));
+            g2.fillRoundRect(3, 4, getWidth() - 6, getHeight() - 6, 20, 20);
+            g2.setPaint(new GradientPaint(0, 0, fill.brighter(), 0, getHeight(), fill));
+            g2.fillRoundRect(0, 0, getWidth() - 6, getHeight() - 6, 20, 20);
             g2.dispose();
             super.paintComponent(g);
         }

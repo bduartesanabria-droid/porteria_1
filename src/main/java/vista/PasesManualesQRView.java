@@ -6,9 +6,11 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
+import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.Box;
@@ -69,20 +71,26 @@ public class PasesManualesQRView extends JPanel {
             @Override
             protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
-                g2.setColor(new Color(255, 255, 255, 235));
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(new Color(255, 255, 255, 205));
                 g2.fillRect(0, 0, getWidth(), getHeight());
-                g2.setColor(new Color(220, 228, 238, 160));
-                g2.fillRect(0, getHeight() - 1, getWidth(), 1);
+                g2.setPaint(new java.awt.GradientPaint(0, getHeight() - 2, new Color(57, 169, 0, 120), getWidth(), getHeight() - 2, new Color(57, 169, 0, 0)));
+                g2.fillRect(0, getHeight() - 2, getWidth(), 2);
                 g2.dispose();
             }
         };
         bar.setOpaque(false);
-        bar.setBorder(new EmptyBorder(10, 20, 10, 20));
+        bar.setBorder(new EmptyBorder(14, 24, 14, 24));
 
-        JLabel title = new JLabel("Pases Manuales/QR");
-        title.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        title.setForeground(new Color(40, 52, 68));
+        JLabel title = new JLabel("● Pases Manuales/QR");
+        title.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        title.setForeground(new Color(30, 42, 60));
         bar.add(title, BorderLayout.WEST);
+
+        JLabel sys = new JLabel("Sistema de Gestión de Acceso · SENA");
+        sys.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        sys.setForeground(new Color(120, 135, 152));
+        bar.add(sys, BorderLayout.EAST);
 
         return bar;
     }

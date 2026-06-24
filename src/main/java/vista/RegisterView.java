@@ -2,6 +2,7 @@ package vista;
 
 import controlador.AuthControlador;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
@@ -26,13 +27,17 @@ public class RegisterView extends BaseAuthView {
         javax.swing.JTextField programa  = field("Nombre del Programa de Formación");
         JComboBox<String> jornada        = combo("Selecciona tu Jornada", "Diurna", "Nocturna", "Fines de semana", "Mixta");
 
-        javax.swing.JLabel loginLink = link(
-            "<html><span style='color:#7a7a7a;'>¿Ya tienes una cuenta? </span>"
-          + "<span style='color:#49aa00; font-weight:bold;'>Inicia sesión aquí</span></html>",
-            () -> { dispose(); new LoginView().setVisible(true); }
-        );
+        ThemeLink backLink = new ThemeLink("<html><span style='font-size:16px;'>⬅ Volver al Login</span></html>", () -> {
+            dispose();
+            new LoginView().setVisible(true);
+        }) {
+            @Override public void applyTheme(boolean dark) {
+                setForeground(dark ? new Color(170, 181, 198) : new Color(120, 130, 140));
+            }
+        };
+        register(backLink);
 
-        JButton registerBtn = action("Finalizar Registro y Enviar Código ➤");
+        JButton registerBtn = action("Completar Registro");
         registerBtn.addActionListener(e -> {
             String nom  = nombre.getText().trim();
             String cor  = correo.getText().trim();
@@ -42,18 +47,16 @@ public class RegisterView extends BaseAuthView {
             String prog = programa.getText().trim();
             String jorn = (String) jornada.getSelectedItem();
 
-            // Validate required fields (ignore placeholder text)
             if (nom.isEmpty()  || nom.equals("Nombre Completo")
              || cor.isEmpty()  || cor.equals("Correo Institucional / Personal")
              || doc.isEmpty()  || doc.equals("Documento de Identidad (Sin puntos)")
              || pw.isEmpty()   || pw.equals("Crea una Contraseña Segura")) {
                 JOptionPane.showMessageDialog(this,
-                    "Por favor completa todos los campos obligatorios:\nNombre, Correo, Documento y Contraseña.",
+                    "Por favor completa todos los campos obligatorios.",
                     "Campos requeridos", JOptionPane.WARNING_MESSAGE);
                 return;
             }
 
-            // Clean placeholder values
             if (fich.equals("Número de Ficha"))                      fich = "";
             if (prog.equals("Nombre del Programa de Formación"))     prog = "";
             if ("Selecciona tu Jornada".equals(jorn))                jorn = null;
@@ -64,49 +67,28 @@ public class RegisterView extends BaseAuthView {
 
                 switch (resultado) {
                     case OK:
-                        JOptionPane.showMessageDialog(this,
-                            "¡Registro exitoso!\nTu cuenta ha sido creada.\nRevisa tu correo para verificarla.",
-                            "Registro completado", JOptionPane.INFORMATION_MESSAGE);
+                        JOptionPane.showMessageDialog(this, "¡Registro exitoso!");
                         dispose();
                         new LoginView().setVisible(true);
                         break;
                     case CORREO_DUPLICADO:
-                        JOptionPane.showMessageDialog(this,
-                            "El correo ingresado ya está registrado.\nUsa otro correo o inicia sesión.",
-                            "Correo duplicado", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(this, "El correo ya está registrado.", "Error", JOptionPane.ERROR_MESSAGE);
                         break;
                     case DOCUMENTO_DUPLICADO:
-                        JOptionPane.showMessageDialog(this,
-                            "El documento ingresado ya está registrado.\nVerifica el número e intenta de nuevo.",
-                            "Documento duplicado", JOptionPane.ERROR_MESSAGE);
-                        break;
-                    case FICHA_INCONSISTENTE:
-                        JOptionPane.showMessageDialog(this,
-                            "El programa de formación no coincide con el de otros aprendices de esta ficha.\nVerifica el número de ficha.",
-                            "Ficha inconsistente", JOptionPane.WARNING_MESSAGE);
-                        break;
-                    case ERROR_BD:
-                        JOptionPane.showMessageDialog(this,
-                            "Error al guardar en la base de datos.\nVerifica que el servidor PostgreSQL esté activo.",
-                            "Error de base de datos", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(this, "El documento ya está registrado.", "Error", JOptionPane.ERROR_MESSAGE);
                         break;
                     default:
-                        JOptionPane.showMessageDialog(this,
-                            "Ocurrió un error inesperado. Intenta de nuevo.",
-                            "Error", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(this, "Ocurrió un error.", "Error", JOptionPane.ERROR_MESSAGE);
                 }
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this,
-                    "Error inesperado al registrar:\n" + ex.getMessage(),
-                    "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Error:\n" + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
 
-        return buildCard(620, 780, (card, g) -> {
-            addRow(card, g, headerBar("register", () -> toggleTheme()), 0, 10);
-            addRow(card, g, badge("👤+"), 0, 8);
-            addRow(card, g, title("Registro Único", 34), 12, 8);
-            addRow(card, g, subtitle("Crea tu perfil y accede a los servicios digitales del SENA."), 0, 18);
+        return buildCard(620, 800, (card, g) -> {
+            addRow(card, g, backLink,  0, 12);
+            addRow(card, g, title("Registro Único", 34), 0, 8);
+            addRow(card, g, subtitle("Crea tu perfil y accede a los servicios digitales."), 0, 18);
             addRow(card, g, nombre,    6, 12);
             addRow(card, g, correo,    0, 12);
             addRow(card, g, documento, 0, 12);
@@ -119,10 +101,9 @@ public class RegisterView extends BaseAuthView {
             jornadaBox.setOpaque(false);
             jornadaBox.add(new javax.swing.JLabel("HORARIO / JORNADA"), BorderLayout.NORTH);
             jornadaBox.add(jornada, BorderLayout.CENTER);
-            addRow(card, g, jornadaBox, 0, 18);
+            addRow(card, g, jornadaBox, 0, 24);
 
             addRow(card, g, registerBtn, 6, 14);
-            addRow(card, g, loginLink,  18,  0);
         });
     }
 }

@@ -49,7 +49,7 @@ class SenaMarkIcon implements javax.swing.Icon {
     public void paintIcon(Component c, Graphics g, int x, int y) {
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g2.setColor(new Color(255, 122, 24));
+        g2.setColor(new Color(57, 169, 0)); // Official SENA Green
         g2.fillOval(x + 7, y + 0, 10, 10);
         g2.drawLine(x + 12, y + 11, x + 12, y + 33);
         g2.drawLine(x + 12, y + 18, x + 2, y + 33);
@@ -518,18 +518,17 @@ class SidebarButton extends JButton implements BaseAuthView.ThemeAware {
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         if (active) {
-            // Fondo verde muy suave
-            g2.setColor(new Color(62, 170, 0, 22));
-            g2.fillRoundRect(2, 1, getWidth() - 6, getHeight() - 3, 10, 10);
-            // Borde verde sutil
-            g2.setColor(new Color(62, 170, 0, 60));
-            g2.drawRoundRect(2, 1, getWidth() - 7, getHeight() - 4, 10, 10);
-            // Indicador izquierdo verde
-            g2.setColor(new Color(62, 170, 0));
-            g2.fillRoundRect(2, 6, 3, getHeight() - 13, 3, 3);
+            java.awt.GradientPaint gp = new java.awt.GradientPaint(
+                0, 0, new Color(46, 204, 113, 38), 
+                getWidth() / 2, 0, new Color(46, 204, 113, 0)
+            );
+            g2.setPaint(gp);
+            g2.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
+            g2.setColor(new Color(46, 204, 113));
+            g2.fillRect(0, 4, 3, getHeight() - 8);
         } else if (hover) {
-            g2.setColor(new Color(62, 170, 0, 10));
-            g2.fillRoundRect(2, 1, getWidth() - 6, getHeight() - 3, 10, 10);
+            g2.setColor(new Color(46, 204, 113, 25));
+            g2.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
         }
         g2.dispose();
         super.paintComponent(g);
