@@ -19,7 +19,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
-
+import controlador.AuthControlador;
+import modelo.Usuario;
 public class DashboardView extends BaseAuthView {
 
     private final TabButton generalTab = new TabButton("Panel General", true);
@@ -107,7 +108,7 @@ public class DashboardView extends BaseAuthView {
         logo.setForeground(Color.WHITE);
         logo.setAlignmentX(LEFT_ALIGNMENT);
 
-        JLabel sub = new JLabel("<html><span style='color:rgba(255,255,255,0.75); font-size:10px;'>Centro de Gestión Agroempresarial</span></html>");
+        JLabel sub = new JLabel("<html><span style='color:rgba(255,255,255,0.75); font-size:10px;'>Centro de Gestión Agroempresarial del Oriente</span></html>");
         sub.setFont(new Font("Segoe UI", Font.PLAIN, 10));
         sub.setForeground(new Color(255, 255, 255, 180));
         sub.setAlignmentX(LEFT_ALIGNMENT);
@@ -134,28 +135,46 @@ public class DashboardView extends BaseAuthView {
         menuWrapper.setLayout(new BoxLayout(menuWrapper, BoxLayout.Y_AXIS));
         menuWrapper.setBorder(new EmptyBorder(0, 10, 0, 10));
 
-        // ── Menú items ──
-        menuWrapper.add(menuItem("Panel General",         true,  MenuIcon.HOME,    e -> showCard("general"),         false));
-        menuWrapper.add(Box.createVerticalStrut(4));
-        menuWrapper.add(menuItem("Escáner QR",            false, MenuIcon.QR,      e -> showCard("scanner"),         false));
-        menuWrapper.add(Box.createVerticalStrut(4));
-        menuWrapper.add(menuItem("Pases Manuales/QR",     false, MenuIcon.PASSES,  e -> showCard("passes"),          false));
-        menuWrapper.add(Box.createVerticalStrut(4));
-        menuWrapper.add(menuItem("Gestión de Perfiles",   false, MenuIcon.USERS,   e -> showCard("profiles"),        false));
-        menuWrapper.add(Box.createVerticalStrut(4));
-        menuWrapper.add(menuItem("Reporte Usuarios",      false, MenuIcon.REPORT,  e -> showCard("reports"),         false));
-        menuWrapper.add(Box.createVerticalStrut(4));
-        menuWrapper.add(menuItem("Historial de Clases",   false, MenuIcon.HISTORY, e -> showCard("classes"),         false));
-        menuWrapper.add(Box.createVerticalStrut(4));
-        menuWrapper.add(menuItem("Mi Ficha",              false, MenuIcon.CARD,    e -> showCard("card"),            false));
-        menuWrapper.add(Box.createVerticalStrut(4));
-        menuWrapper.add(menuItem("Comunicados",           false, MenuIcon.MESSAGE, e -> showCard("messages"),        false));
-        menuWrapper.add(Box.createVerticalStrut(4));
-        menuWrapper.add(menuItem("Mi Perfil",             false, MenuIcon.CARD,    e -> showCard("profile"),         false));
-        menuWrapper.add(Box.createVerticalStrut(4));
-        menuWrapper.add(menuItem("Historial de Cambios",  false, MenuIcon.CLOCK,   e -> showCard("changes"),         false));
-        menuWrapper.add(Box.createVerticalStrut(4));
-        menuWrapper.add(menuItem("Respaldos del Sistema", false, MenuIcon.BACKUPS,  e -> showCard("backups"),         false));
+        // ── Menú items (Renderizados por Rol) ──
+        Usuario u = AuthControlador.getUsuarioActual();
+        boolean isVigilante = u != null && u.esCelador();
+        boolean isAdmin = u != null && u.esAdmin();
+        boolean isCoord = u != null && u.esInstructor();
+
+        if (isAdmin || isVigilante) {
+            menuWrapper.add(menuItem("Panel General",         true,  MenuIcon.HOME,    e -> showCard("general"),         false));
+            menuWrapper.add(Box.createVerticalStrut(4));
+        }
+        if (isAdmin || isVigilante) {
+            menuWrapper.add(menuItem("Escáner QR",            false, MenuIcon.QR,      e -> showCard("scanner"),         false));
+            menuWrapper.add(Box.createVerticalStrut(4));
+            menuWrapper.add(menuItem("Pases Manuales/QR",     false, MenuIcon.PASSES,  e -> showCard("passes"),          false));
+            menuWrapper.add(Box.createVerticalStrut(4));
+            menuWrapper.add(menuItem("Historial de Clases",   false, MenuIcon.HISTORY, e -> showCard("classes"),         false));
+            menuWrapper.add(Box.createVerticalStrut(4));
+        }
+        if (isAdmin) {
+            menuWrapper.add(menuItem("Gestión de Perfiles",   false, MenuIcon.USERS,   e -> showCard("profiles"),        false));
+            menuWrapper.add(Box.createVerticalStrut(4));
+            menuWrapper.add(menuItem("Reporte Usuarios",      false, MenuIcon.REPORT,  e -> showCard("reports"),         false));
+            menuWrapper.add(Box.createVerticalStrut(4));
+        }
+        
+        // Todos pueden ver Mi Ficha, Comunicados y Mi Perfil (Excepto tal vez vigilante estricto, pero los dejamos general para aprendices/usuarios/coord)
+        if (!isVigilante || isAdmin) {
+            menuWrapper.add(menuItem("Mi Ficha",              false, MenuIcon.CARD,    e -> showCard("card"),            false));
+            menuWrapper.add(Box.createVerticalStrut(4));
+            menuWrapper.add(menuItem("Comunicados",           false, MenuIcon.MESSAGE, e -> showCard("messages"),        false));
+            menuWrapper.add(Box.createVerticalStrut(4));
+            menuWrapper.add(menuItem("Mi Perfil",             false, MenuIcon.CARD,    e -> showCard("profile"),         false));
+            menuWrapper.add(Box.createVerticalStrut(4));
+        }
+        
+        if (isAdmin) {
+            menuWrapper.add(menuItem("Historial de Cambios",  false, MenuIcon.CLOCK,   e -> showCard("changes"),         false));
+            menuWrapper.add(Box.createVerticalStrut(4));
+            menuWrapper.add(menuItem("Respaldos del Sistema", false, MenuIcon.BACKUPS,  e -> showCard("backups"),         false));
+        }
         menuWrapper.add(Box.createVerticalGlue());
 
         inner.add(menuWrapper);
@@ -515,8 +534,44 @@ public class DashboardView extends BaseAuthView {
             header.add(l);
         }
         panel.add(header);
-        panel.add(historyRow("Aprendiz", "1000000003", "APRENDIZ", "Adso (Ficha: 3235642)", "Ninguno", false));
-        panel.add(historyRow("Aprendiz", "1000000003", "APRENDIZ", "Adso (Ficha: 3235642)", "Ninguno", true));
+
+        try {
+            java.util.List<modelo.Acceso> accesos = modelo.AccesoDAO.listarUltimos(20);
+            if (accesos.isEmpty()) {
+                JPanel empty = new JPanel(new java.awt.BorderLayout());
+                empty.setOpaque(true);
+                empty.setBackground(Color.WHITE);
+                empty.setBorder(new EmptyBorder(20, 20, 20, 20));
+                JLabel msg = new JLabel("No hay accesos registrados.");
+                msg.setHorizontalAlignment(SwingConstants.CENTER);
+                msg.setForeground(new Color(120, 130, 140));
+                empty.add(msg, java.awt.BorderLayout.CENTER);
+                panel.add(empty);
+            } else {
+                for (modelo.Acceso a : accesos) {
+                    String nombre = a.getNombrePersona() != null ? a.getNombrePersona() : a.getTipoReferencia();
+                    String doc = a.getDocumentoPersona() != null ? a.getDocumentoPersona() : "N/A";
+                    String cargo = a.getCargoPersona() != null ? a.getCargoPersona().toUpperCase() : a.getTipoReferencia().toUpperCase();
+                    
+                    String programa = "N/A";
+                    if (a.getProgramaPersona() != null) {
+                        programa = a.getProgramaPersona();
+                        if (a.getFichaPersona() != null) programa += " (" + a.getFichaPersona() + ")";
+                    }
+                    
+                    String equipos = a.getEquiposStr() != null && !a.getEquiposStr().isEmpty() ? a.getEquiposStr() : "Ninguno";
+                    boolean entrada = "Entrada".equalsIgnoreCase(a.getTipo());
+                    
+                    panel.add(historyRow(nombre, doc, cargo, programa, equipos, entrada));
+                }
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            JLabel err = new JLabel("Error cargando historial: " + ex.getMessage());
+            err.setForeground(Color.RED);
+            panel.add(err);
+        }
+
         JPanel foot = new JPanel();
         foot.setBackground(new Color(15, 58, 84));
         foot.setPreferredSize(new Dimension(10, 4));

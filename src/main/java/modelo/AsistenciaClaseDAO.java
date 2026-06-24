@@ -41,6 +41,24 @@ public class AsistenciaClaseDAO {
         return lista;
     }
 
+    public static List<AsistenciaClase> listarRecientes(int limite) throws SQLException {
+        List<AsistenciaClase> lista = new ArrayList<>();
+        String sql = "SELECT ac.*, " +
+                     "ap.nombre AS nombre_aprendiz, ap.documento AS documento_aprendiz, " +
+                     "ins.nombre AS nombre_instructor " +
+                     "FROM asistencia_clases ac " +
+                     "JOIN usuarios ap  ON ap.id  = ac.aprendiz_id " +
+                     "JOIN usuarios ins ON ins.id = ac.instructor_id " +
+                     "ORDER BY ac.fecha DESC LIMIT ?";
+        try (Connection cn = Conexion.obtener(); PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setInt(1, limite);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) lista.add(mapear(rs));
+            }
+        }
+        return lista;
+    }
+
     public static List<AsistenciaClase> listarPorInstructor(int instructorId) throws SQLException {
         List<AsistenciaClase> lista = new ArrayList<>();
         String sql = "SELECT ac.*, " +

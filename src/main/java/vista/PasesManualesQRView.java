@@ -167,14 +167,14 @@ public class PasesManualesQRView extends JPanel {
         BaseAuthView.CardPanel card = mainFrame.new CardPanel();
         mainFrame.register(card);
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
-        card.setBorder(new EmptyBorder(18, 18, 18, 18));
-        card.setPreferredSize(new Dimension(230, 280));
+        card.setBorder(new EmptyBorder(22, 22, 22, 22));
+        card.setPreferredSize(new Dimension(320, 320));
 
         JTextField nombre    = textField("Nombre Completo");
         JTextField documento = textField("Documento");
         JTextField entidad   = textField("Entidad/Empresa (Motivo)");
 
-        PillButton btn = new PillButton("Generar Pase QR", new Color(62, 170, 0), 170);
+        PillButton btn = new PillButton("Generar Pase QR", new Color(62, 170, 0), 220);
         btn.addActionListener(e -> {
             String nom = nombre.getText().trim();
             String doc = documento.getText().trim();
@@ -236,15 +236,15 @@ public class PasesManualesQRView extends JPanel {
         BaseAuthView.CardPanel card = mainFrame.new CardPanel();
         mainFrame.register(card);
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
-        card.setBorder(new EmptyBorder(18, 18, 18, 18));
-        card.setPreferredSize(new Dimension(230, 332));
+        card.setBorder(new EmptyBorder(22, 22, 22, 22));
+        card.setPreferredSize(new Dimension(320, 380));
 
         JTextField   placa  = textField("Placa");
         JComboBox<String> tipo = comboField("Selecciona Tipo", "Carro", "Moto", "Camión");
         JTextField propietario = textField("Propietario / Conductor");
         JTextArea   motivo  = textArea("Motivo de Ingreso");
 
-        PillButton btn = new PillButton("+ Registrar y Generar QR", new Color(62, 170, 0), 170);
+        PillButton btn = new PillButton("+ Registrar y Generar QR", new Color(62, 170, 0), 240);
         btn.addActionListener(e -> {
             String plc = placa.getText().trim().toUpperCase();
             String tip = (String) tipo.getSelectedItem();
@@ -310,15 +310,15 @@ public class PasesManualesQRView extends JPanel {
         BaseAuthView.CardPanel card = mainFrame.new CardPanel();
         mainFrame.register(card);
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
-        card.setBorder(new EmptyBorder(18, 18, 18, 18));
-        card.setPreferredSize(new Dimension(230, 332));
+        card.setBorder(new EmptyBorder(22, 22, 22, 22));
+        card.setPreferredSize(new Dimension(320, 380));
 
         JTextArea  descripcion = textArea("Descripción del Objeto (ej. Portátil, Taladro)");
         JTextField serial      = textField("Serial / Placa de Control (Opcional)");
         JTextField propietario = textField("Propietario / Portador");
         JTextArea  motivoArea  = textArea("Motivo de Ingreso");
 
-        PillButton btn = new PillButton("+ Registrar y Generar QR", new Color(62, 170, 0), 170);
+        PillButton btn = new PillButton("+ Registrar y Generar QR", new Color(62, 170, 0), 240);
         btn.addActionListener(e -> {
             String desc = descripcion.getText().trim();
             String ser  = serial.getText().trim();
@@ -422,29 +422,86 @@ public class PasesManualesQRView extends JPanel {
     // ── HELPERS DE CAMPOS ─────────────────────────────────────────────────────
 
     private JTextField textField(String placeholder) {
-        JTextField field = new JTextField(placeholder);
-        field.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        field.setForeground(new Color(92, 104, 116));
-        field.setBorder(new EmptyBorder(10, 12, 10, 12));
-        field.setMaximumSize(new Dimension(220, 36));
+        JTextField field = new JTextField(placeholder) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(new Color(248, 250, 252));
+                g2.fillRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 12, 12);
+                g2.setColor(new Color(200, 210, 220));
+                g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 12, 12);
+                g2.dispose();
+                super.paintComponent(g);
+            }
+        };
+        field.setOpaque(false);
+        field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        field.setForeground(new Color(130, 140, 150));
+        field.setBorder(new EmptyBorder(10, 14, 10, 14));
+        field.setMaximumSize(new Dimension(280, 42));
+        
+        field.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent e) {
+                if (field.getText().equals(placeholder)) {
+                    field.setText("");
+                    field.setForeground(new Color(40, 50, 60));
+                }
+            }
+            public void focusLost(java.awt.event.FocusEvent e) {
+                if (field.getText().trim().isEmpty()) {
+                    field.setText(placeholder);
+                    field.setForeground(new Color(130, 140, 150));
+                }
+            }
+        });
         return field;
     }
 
     private JComboBox<String> comboField(String placeholder, String... items) {
         JComboBox<String> box = new JComboBox<>(items);
-        box.setMaximumSize(new Dimension(220, 36));
-        box.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        box.setMaximumSize(new Dimension(280, 42));
+        box.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        box.setBackground(new Color(248, 250, 252));
         return box;
     }
 
     private JTextArea textArea(String placeholder) {
-        JTextArea area = new JTextArea(placeholder);
-        area.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        area.setForeground(new Color(92, 104, 116));
+        JTextArea area = new JTextArea(placeholder) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(new Color(248, 250, 252));
+                g2.fillRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 12, 12);
+                g2.setColor(new Color(200, 210, 220));
+                g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 12, 12);
+                g2.dispose();
+                super.paintComponent(g);
+            }
+        };
+        area.setOpaque(false);
+        area.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        area.setForeground(new Color(130, 140, 150));
         area.setLineWrap(true);
         area.setWrapStyleWord(true);
-        area.setBorder(new EmptyBorder(10, 12, 10, 12));
-        area.setMaximumSize(new Dimension(220, 64));
+        area.setBorder(new EmptyBorder(10, 14, 10, 14));
+        area.setMaximumSize(new Dimension(280, 80));
+        
+        area.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent e) {
+                if (area.getText().equals(placeholder)) {
+                    area.setText("");
+                    area.setForeground(new Color(40, 50, 60));
+                }
+            }
+            public void focusLost(java.awt.event.FocusEvent e) {
+                if (area.getText().trim().isEmpty()) {
+                    area.setText(placeholder);
+                    area.setForeground(new Color(130, 140, 150));
+                }
+            }
+        });
         return area;
     }
 }

@@ -61,6 +61,16 @@ public class VisitanteDAO {
         return lista;
     }
 
+    public static List<Visitante> listarTodos() throws SQLException {
+        List<Visitante> lista = new ArrayList<>();
+        try (Connection cn = Conexion.obtener();
+             PreparedStatement ps = cn.prepareStatement("SELECT * FROM visitantes ORDER BY nombre");
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) lista.add(mapear(rs));
+        }
+        return lista;
+    }
+
     public static void actualizar(Visitante v) throws SQLException {
         String sql = "UPDATE visitantes SET nombre=?, documento=?, motivo=?, activo=? WHERE id=?";
         try (Connection cn = Conexion.obtener(); PreparedStatement ps = cn.prepareStatement(sql)) {

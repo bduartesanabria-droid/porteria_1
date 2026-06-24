@@ -62,6 +62,16 @@ public class VehiculoDAO {
         return lista;
     }
 
+    public static List<Vehiculo> listarTodos() throws SQLException {
+        List<Vehiculo> lista = new ArrayList<>();
+        try (Connection cn = Conexion.obtener();
+             PreparedStatement ps = cn.prepareStatement("SELECT * FROM vehiculos ORDER BY placa");
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) lista.add(mapear(rs));
+        }
+        return lista;
+    }
+
     public static void actualizar(Vehiculo v) throws SQLException {
         String sql = "UPDATE vehiculos SET placa=?, tipo=?, propietario=?, motivo=?, activo=? WHERE id=?";
         try (Connection cn = Conexion.obtener(); PreparedStatement ps = cn.prepareStatement(sql)) {
