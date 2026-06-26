@@ -187,7 +187,7 @@ public class ComunicadosView extends JPanel {
                 comunicadosPanel.revalidate();
                 comunicadosPanel.repaint();
                 
-                JOptionPane.showMessageDialog(this, "Comunicado publicado.", "\u00c9xito", JOptionPane.INFORMATION_MESSAGE);
+                UiDialogs.showMessage(this, "\u00c9xito", "Comunicado publicado.", UiDialogs.Kind.SUCCESS);
             }
         }
     }

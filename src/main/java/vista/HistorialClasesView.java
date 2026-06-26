@@ -136,7 +136,7 @@ public class HistorialClasesView extends JPanel {
         try {
             List<AsistenciaClase> lista = AsistenciaClaseDAO.listarPorFicha(ficha);
             if (lista.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "No se encontraron registros para la ficha: " + ficha, "Sin resultados", JOptionPane.INFORMATION_MESSAGE);
+                UiDialogs.showMessage(this, "Sin resultados", "No se encontraron registros para la ficha: " + ficha, UiDialogs.Kind.INFO);
                 return;
             }
             for (AsistenciaClase ac : lista) {
@@ -151,7 +151,7 @@ public class HistorialClasesView extends JPanel {
                 });
             }
         } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(this, "Error al buscar: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            UiDialogs.showMessage(this, "Error", "Error al buscar: " + ex.getMessage(), UiDialogs.Kind.ERROR);
         }
     }
 
@@ -172,7 +172,7 @@ public class HistorialClasesView extends JPanel {
                 });
             }
         } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(this, "Error al cargar datos: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            UiDialogs.showMessage(this, "Error", "Error al cargar datos: " + ex.getMessage(), UiDialogs.Kind.ERROR);
         }
     }
 

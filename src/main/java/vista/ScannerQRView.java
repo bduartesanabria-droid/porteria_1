@@ -213,9 +213,10 @@ public class ScannerQRView extends JPanel {
         verify.addActionListener(e -> {
             String codigo = field.getText().trim();
             if (codigo.isEmpty() || codigo.equals("ID / CÉDULA DEL USUARIO")) {
-                JOptionPane.showMessageDialog(this,
+                UiDialogs.showMessage(this,
+                    "Campo vacío",
                     "Ingresa un ID, cédula o código QR antes de verificar.",
-                    "Campo vacío", JOptionPane.WARNING_MESSAGE);
+                    UiDialogs.Kind.WARNING);
                 return;
             }
             procesarCodigo(codigo);
@@ -238,7 +239,10 @@ public class ScannerQRView extends JPanel {
 
         com.github.sarxos.webcam.Webcam webcam = com.github.sarxos.webcam.Webcam.getDefault();
         if (webcam == null) {
-            JOptionPane.showMessageDialog(this, "No se detectó ninguna cámara web conectada.", "Error de Hardware", JOptionPane.ERROR_MESSAGE);
+            UiDialogs.showMessage(this,
+                "Error de Hardware",
+                "No se detectó ninguna cámara web conectada.",
+                UiDialogs.Kind.ERROR);
             return;
         }
 
@@ -317,22 +321,26 @@ public class ScannerQRView extends JPanel {
         try {
             ScannerControlador.ResultadoVerificacion rv = ScannerControlador.verificar(codigo);
             if (!rv.encontrado) {
-                JOptionPane.showMessageDialog(this,
+                UiDialogs.showMessage(this,
+                    "No encontrado",
                     "No se encontró ninguna entidad con: " + codigo,
-                    "No encontrado", JOptionPane.ERROR_MESSAGE);
+                    UiDialogs.Kind.ERROR);
                 return;
             }
             mostrarPerfilEscaneado(rv);
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this,
+            UiDialogs.showMessage(this,
+                "Error de conexión",
                 "Error al consultar la base de datos:\n" + ex.getMessage(),
-                "Error de conexión", JOptionPane.ERROR_MESSAGE);
+                UiDialogs.Kind.ERROR);
         }
     }
 
     private void mostrarPerfilEscaneado(ScannerControlador.ResultadoVerificacion rv) {
         // Extraer datos
         String nombre = "Desconocido", doc = "N/A", cargo = "Desconocido", rol = "Usuario";
+        String correo = "N/A", programa = "N/A", ficha = "N/A", horario = "N/A", rh = "N/A";
+        boolean perfilCompleto = false;
         try {
             switch (rv.tipo) {
                 case USUARIO: {
@@ -340,6 +348,12 @@ public class ScannerQRView extends JPanel {
                     nombre = u.getNombre() != null ? u.getNombre() : "Sin nombre";
                     doc    = u.getDocumento() != null ? u.getDocumento() : "N/A";
                     cargo  = u.getCargo() != null ? u.getCargo().toUpperCase() : "USUARIO";
+                    correo = u.getCorreo() != null ? u.getCorreo() : "N/A";
+                    programa = u.getPrograma() != null ? u.getPrograma() : "N/A";
+                    ficha = u.getFicha() != null ? u.getFicha() : "N/A";
+                    horario = u.getHorario() != null ? u.getHorario() : "N/A";
+                    rh = u.getTipoSangre() != null ? u.getTipoSangre() : "N/A";
+                    perfilCompleto = u.isPerfilCompleto();
                     rol    = "Usuario"; break;
                 }
                 case VISITANTE: {
@@ -361,12 +375,14 @@ public class ScannerQRView extends JPanel {
         } catch (Exception ignored) {}
 
         final String fNombre = nombre, fDoc = doc, fCargo = cargo, fRol = rol;
+        final String fCorreo = correo, fPrograma = programa, fFicha = ficha, fHorario = horario, fRh = rh;
+        final String fPerfil = perfilCompleto ? "Completo" : "Pendiente";
 
         Window parentWindow = SwingUtilities.getWindowAncestor(this);
         javax.swing.JDialog dialog = new javax.swing.JDialog(parentWindow,
-            "Perfil Escaneado", javax.swing.JDialog.ModalityType.APPLICATION_MODAL);
+            "Perfil Institucional", javax.swing.JDialog.ModalityType.APPLICATION_MODAL);
         dialog.setDefaultCloseOperation(javax.swing.JDialog.DISPOSE_ON_CLOSE);
-        dialog.setSize(400, 600);
+        dialog.setSize(540, 760);
         dialog.setLocationRelativeTo(parentWindow);
         dialog.setResizable(false);
 
@@ -385,6 +401,16 @@ public class ScannerQRView extends JPanel {
         JPanel content = new JPanel();
         content.setOpaque(false);
         content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
+
+        JLabel title = new JLabel("PERFIL INSTITUCIONAL", SwingConstants.CENTER);
+        title.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        title.setForeground(new Color(20, 45, 20));
+        title.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel subtitle = new JLabel("Identidad digital y validaciÃ³n institucional", SwingConstants.CENTER);
+        subtitle.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        subtitle.setForeground(new Color(80, 105, 80));
+        subtitle.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         // ── Badge estado ────────────────────────────────────────────────────────
         JLabel badge = new JLabel("ESTADO ACTUAL: EN SEDE", SwingConstants.CENTER);
@@ -471,6 +497,21 @@ public class ScannerQRView extends JPanel {
         infoRow.add(cedPanel);
         infoRow.add(rolPanel);
 
+        JPanel detalleRow = new JPanel(new GridLayout(3, 2, 10, 8));
+        detalleRow.setOpaque(true);
+        detalleRow.setBackground(new Color(245, 250, 245));
+        detalleRow.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+            new LineBorder(new Color(200, 230, 200), 1, true),
+            new EmptyBorder(10, 16, 10, 16)));
+        detalleRow.setMaximumSize(new Dimension(340, 126));
+        detalleRow.setAlignmentX(Component.CENTER_ALIGNMENT);
+        detalleRow.add(detalleChip("CORREO", fCorreo));
+        detalleRow.add(detalleChip("PROGRAMA", fPrograma));
+        detalleRow.add(detalleChip("FICHA", fFicha));
+        detalleRow.add(detalleChip("JORNADA", fHorario));
+        detalleRow.add(detalleChip("RH", fRh));
+        detalleRow.add(detalleChip("PERFIL", fPerfil));
+
         // ── Botones ENTRADA / SALIDA ───────────────────────────────────────────
         JPanel btnRow = new JPanel(new GridLayout(1, 2, 12, 0));
         btnRow.setOpaque(false);
@@ -539,6 +580,10 @@ public class ScannerQRView extends JPanel {
         });
 
         // ── Ensamblar ─────────────────────────────────────────────────────────
+        content.add(title);
+        content.add(Box.createVerticalStrut(4));
+        content.add(subtitle);
+        content.add(Box.createVerticalStrut(14));
         content.add(badge);
         content.add(Box.createVerticalStrut(18));
         content.add(avatar);
@@ -548,6 +593,8 @@ public class ScannerQRView extends JPanel {
         content.add(cargoLabel);
         content.add(Box.createVerticalStrut(18));
         content.add(infoRow);
+        content.add(Box.createVerticalStrut(10));
+        content.add(detalleRow);
         content.add(Box.createVerticalStrut(22));
         content.add(btnRow);
         content.add(Box.createVerticalStrut(16));
@@ -556,6 +603,21 @@ public class ScannerQRView extends JPanel {
         root.add(content, BorderLayout.CENTER);
         dialog.setContentPane(root);
         dialog.setVisible(true);
+    }
+
+    private JPanel detalleChip(String label, String value) {
+        JPanel chip = new JPanel();
+        chip.setOpaque(false);
+        chip.setLayout(new BoxLayout(chip, BoxLayout.Y_AXIS));
+        JLabel l = new JLabel(label);
+        l.setFont(new Font("Segoe UI", Font.BOLD, 9));
+        l.setForeground(new Color(100, 110, 100));
+        JLabel v = new JLabel(value != null && !value.isEmpty() ? value : "N/A");
+        v.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        v.setForeground(new Color(20, 30, 20));
+        chip.add(l);
+        chip.add(v);
+        return chip;
     }
 
     private void registrarMovimiento(ScannerControlador.ResultadoVerificacion rv, String tipo) {
@@ -571,14 +633,14 @@ public class ScannerQRView extends JPanel {
             }
             switch (mov) {
                 case OK:
-                    JOptionPane.showMessageDialog(this, tipo + " registrada con éxito.", "OK", JOptionPane.INFORMATION_MESSAGE); break;
+                    UiDialogs.showMessage(this, "OK", tipo + " registrada con éxito.", UiDialogs.Kind.SUCCESS); break;
                 case DISCREPANCIA:
-                    JOptionPane.showMessageDialog(this, tipo + " registrada (posible discrepancia).", "Advertencia", JOptionPane.WARNING_MESSAGE); break;
+                    UiDialogs.showMessage(this, "Advertencia", tipo + " registrada (posible discrepancia).", UiDialogs.Kind.WARNING); break;
                 default:
-                    JOptionPane.showMessageDialog(this, "Error al guardar.", "Error", JOptionPane.ERROR_MESSAGE);
+                    UiDialogs.showMessage(this, "Error", "Error al guardar.", UiDialogs.Kind.ERROR);
             }
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            UiDialogs.showMessage(this, "Error", "Error: " + ex.getMessage(), UiDialogs.Kind.ERROR);
         }
     }
 

@@ -114,7 +114,7 @@ abstract class BaseAuthView extends JFrame {
                 String cNormal = dark ? "#f0f4f8" : "#212b43";
                 String cGreen = "#39a900";
                 String cOrange = "#f69514";
-                setText("<html><div style='line-height: 1.1; font-weight: 800;'>" +
+                setText("<html><div style='width: 100%; text-align: left; line-height: 1.1; font-weight: 800;'>" +
                         "<span style='color:" + cNormal + ";'>Únete al </span>" +
                         "<span style='color:" + cGreen + ";'>Centro de Gestión</span><br>" +
                         "<span style='color:" + cOrange + ";'>Agroempresarial</span><br>" +
@@ -123,6 +123,7 @@ abstract class BaseAuthView extends JFrame {
             }
         };
         titleGroup.setAlignmentX(LEFT_ALIGNMENT);
+        titleGroup.setHorizontalAlignment(SwingConstants.LEFT);
         register(titleGroup);
         panel.add(titleGroup);
         panel.add(Box.createVerticalStrut(30));
@@ -379,6 +380,7 @@ abstract class BaseAuthView extends JFrame {
             setFont(new Font("Segoe UI", Font.BOLD, 18));
             setBorder(new EmptyBorder(18, 18, 18, 18));
             setOpaque(false);
+            setCaretPosition(0);
             addFocusListener(new FocusAdapter() {
                 @Override
                 public void focusGained(FocusEvent e) {
@@ -395,6 +397,7 @@ abstract class BaseAuthView extends JFrame {
                         showingPlaceholder = true;
                         setText(placeholder);
                         setForeground(placeholderText());
+                        setCaretPosition(0);
                     }
                 }
             });
@@ -404,6 +407,9 @@ abstract class BaseAuthView extends JFrame {
         @Override
         public void applyTheme(boolean darkMode) {
             setForeground(showingPlaceholder ? placeholderText() : inputText());
+            if (showingPlaceholder) {
+                setCaretPosition(0);
+            }
         }
 
         @Override
@@ -433,6 +439,7 @@ abstract class BaseAuthView extends JFrame {
             setFont(new Font("Segoe UI", Font.BOLD, 18));
             setBorder(new EmptyBorder(18, 18, 18, 50));
             setOpaque(false);
+            setCaretPosition(0);
             addFocusListener(new FocusAdapter() {
                 @Override
                 public void focusGained(FocusEvent e) {
@@ -451,6 +458,7 @@ abstract class BaseAuthView extends JFrame {
                         setText(placeholder);
                         setEchoChar((char) 0);
                         setForeground(placeholderText());
+                        setCaretPosition(0);
                     }
                 }
             });
@@ -482,6 +490,9 @@ abstract class BaseAuthView extends JFrame {
         @Override
         public void applyTheme(boolean darkMode) {
             setForeground(showingPlaceholder ? placeholderText() : inputText());
+            if (showingPlaceholder) {
+                setCaretPosition(0);
+            }
         }
 
         @Override

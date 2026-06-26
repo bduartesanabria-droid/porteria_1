@@ -25,7 +25,7 @@ public class AuthControlador {
 
     public enum ResultadoLogin {
         OK, CREDENCIALES_INCORRECTAS, CUENTA_BLOQUEADA,
-        CORREO_NO_VERIFICADO, PERFIL_INCOMPLETO, DEBE_CAMBIAR_CONTRASENA
+        PERFIL_INCOMPLETO, DEBE_CAMBIAR_CONTRASENA
     }
 
     public static ResultadoLogin iniciarSesion(String identificador, String contrasena) throws SQLException {
@@ -54,10 +54,15 @@ public class AuthControlador {
             UsuarioDAO.actualizarIntentosFallidos(u.getId(), 0);
         }
 
-        // Verificar estado de la cuenta
-        if (!u.isCorreoVerificado()) return ResultadoLogin.CORREO_NO_VERIFICADO;
-        if (u.isDebeCambiarContrasena()) return ResultadoLogin.DEBE_CAMBIAR_CONTRASENA;
-        if (!u.isPerfilCompleto()) return ResultadoLogin.PERFIL_INCOMPLETO;
+        // El correo se usa solo como identificador de acceso; no requiere verificación.
+        if (u.isDebeCambiarContrasena()) {
+            usuarioActual = u;
+            return ResultadoLogin.DEBE_CAMBIAR_CONTRASENA;
+        }
+        if (!u.isPerfilCompleto()) {
+            usuarioActual = u;
+            return ResultadoLogin.PERFIL_INCOMPLETO;
+        }
 
         // Crear turno si es celador
         if (u.esCelador()) {
@@ -106,9 +111,6 @@ public class AuthControlador {
                 }
             }
 
-            String codigo = generarCodigo6Digitos();
-            Timestamp expiracion = new Timestamp(System.currentTimeMillis() + MINUTOS_CODIGO * 60_000L);
-
             Usuario u = new Usuario();
             u.setNombre(nombre.trim());
             u.setCorreo(correo.trim().toLowerCase());
@@ -119,9 +121,9 @@ public class AuthControlador {
             u.setPrograma(programa);
             u.setFicha(ficha);
             u.setHorario(horario);
-            u.setCorreoVerificado(false);
-            u.setCodigoVerificacion(codigo);
-            u.setCodigoExpiracion(expiracion);
+            u.setCorreoVerificado(true);
+            u.setCodigoVerificacion(null);
+            u.setCodigoExpiracion(null);
 
             UsuarioDAO.crear(u);
             return ResultadoRegistro.OK;
@@ -130,31 +132,6 @@ public class AuthControlador {
             e.printStackTrace();
             return ResultadoRegistro.ERROR_BD;
         }
-    }
-
-    // ─── VERIFICACIÓN DE CORREO ───────────────────────────────────────────────
-
-    public enum ResultadoVerificacion {
-        OK, CODIGO_INVALIDO, CODIGO_EXPIRADO
-    }
-
-    public static ResultadoVerificacion verificarCorreo(int usuarioId, String codigoIngresado) throws SQLException {
-        Usuario u = UsuarioDAO.buscarPorId(usuarioId);
-        if (u == null || !codigoIngresado.equals(u.getCodigoVerificacion())) {
-            return ResultadoVerificacion.CODIGO_INVALIDO;
-        }
-        if (u.getCodigoExpiracion() != null && u.getCodigoExpiracion().before(new Timestamp(System.currentTimeMillis()))) {
-            return ResultadoVerificacion.CODIGO_EXPIRADO;
-        }
-        UsuarioDAO.marcarCorreoVerificado(u.getId());
-        return ResultadoVerificacion.OK;
-    }
-
-    public static void reenviarCodigo(int usuarioId) throws SQLException {
-        String codigo = generarCodigo6Digitos();
-        Timestamp expiracion = new Timestamp(System.currentTimeMillis() + MINUTOS_CODIGO * 60_000L);
-        UsuarioDAO.actualizarVerificacion(usuarioId, codigo, expiracion);
-        // Nota: la notificación al usuario (email) se gestiona desde la vista o un servicio externo
     }
 
     // ─── CAMBIO DE CONTRASEÑA ─────────────────────────────────────────────────

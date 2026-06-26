@@ -174,7 +174,7 @@ public class PasesManualesQRView extends JPanel {
         JTextField documento = textField("Documento");
         JTextField entidad   = textField("Entidad/Empresa (Motivo)");
 
-        PillButton btn = new PillButton("Generar Pase QR", new Color(62, 170, 0), 220);
+        PillButton btn = new PillButton("Generar Pase QR", new Color(62, 170, 0), 260);
         btn.addActionListener(e -> {
             String nom = nombre.getText().trim();
             String doc = documento.getText().trim();
@@ -182,9 +182,10 @@ public class PasesManualesQRView extends JPanel {
 
             if (nom.isEmpty() || nom.equals("Nombre Completo")
              || doc.isEmpty() || doc.equals("Documento")) {
-                JOptionPane.showMessageDialog(PasesManualesQRView.this,
+                UiDialogs.showMessage(PasesManualesQRView.this,
+                    "Campos requeridos",
                     "Nombre y Documento son obligatorios.",
-                    "Campos requeridos", JOptionPane.WARNING_MESSAGE);
+                    UiDialogs.Kind.WARNING);
                 return;
             }
             if (mot.equals("Entidad/Empresa (Motivo)")) mot = "";
@@ -244,7 +245,7 @@ public class PasesManualesQRView extends JPanel {
         JTextField propietario = textField("Propietario / Conductor");
         JTextArea   motivo  = textArea("Motivo de Ingreso");
 
-        PillButton btn = new PillButton("+ Registrar y Generar QR", new Color(62, 170, 0), 240);
+        PillButton btn = new PillButton("+ Registrar y Generar QR", new Color(62, 170, 0), 300);
         btn.addActionListener(e -> {
             String plc = placa.getText().trim().toUpperCase();
             String tip = (String) tipo.getSelectedItem();
@@ -318,7 +319,7 @@ public class PasesManualesQRView extends JPanel {
         JTextField propietario = textField("Propietario / Portador");
         JTextArea  motivoArea  = textArea("Motivo de Ingreso");
 
-        PillButton btn = new PillButton("+ Registrar y Generar QR", new Color(62, 170, 0), 240);
+        PillButton btn = new PillButton("+ Registrar y Generar QR", new Color(62, 170, 0), 300);
         btn.addActionListener(e -> {
             String desc = descripcion.getText().trim();
             String ser  = serial.getText().trim();
@@ -439,7 +440,8 @@ public class PasesManualesQRView extends JPanel {
         field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         field.setForeground(new Color(130, 140, 150));
         field.setBorder(new EmptyBorder(10, 14, 10, 14));
-        field.setMaximumSize(new Dimension(280, 42));
+        field.setMaximumSize(new Dimension(320, 42));
+        field.setCaretPosition(0);
         
         field.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent e) {
@@ -452,6 +454,7 @@ public class PasesManualesQRView extends JPanel {
                 if (field.getText().trim().isEmpty()) {
                     field.setText(placeholder);
                     field.setForeground(new Color(130, 140, 150));
+                    field.setCaretPosition(0);
                 }
             }
         });
@@ -486,7 +489,8 @@ public class PasesManualesQRView extends JPanel {
         area.setLineWrap(true);
         area.setWrapStyleWord(true);
         area.setBorder(new EmptyBorder(10, 14, 10, 14));
-        area.setMaximumSize(new Dimension(280, 80));
+        area.setMaximumSize(new Dimension(320, 92));
+        area.setCaretPosition(0);
         
         area.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent e) {
@@ -499,6 +503,7 @@ public class PasesManualesQRView extends JPanel {
                 if (area.getText().trim().isEmpty()) {
                     area.setText(placeholder);
                     area.setForeground(new Color(130, 140, 150));
+                    area.setCaretPosition(0);
                 }
             }
         });

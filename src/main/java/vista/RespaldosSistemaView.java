@@ -299,8 +299,8 @@ public class RespaldosSistemaView extends JPanel {
 
     private String safe(String s) { return s != null ? s.replace("\"", "'") : ""; }
     private File ensureCsv(File f) { return f.getName().endsWith(".csv") ? f : new File(f.getAbsolutePath() + ".csv"); }
-    private void ok(String name) { JOptionPane.showMessageDialog(this, "Exportado: " + name, "\u00c9xito", JOptionPane.INFORMATION_MESSAGE); }
-    private void err(Exception ex) { JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE); }
+    private void ok(String name) { UiDialogs.showMessage(this, "\u00c9xito", "Exportado: " + name, UiDialogs.Kind.SUCCESS); }
+    private void err(Exception ex) { UiDialogs.showMessage(this, "Error", "Error: " + ex.getMessage(), UiDialogs.Kind.ERROR); }
 
     private JButton makeBtn(String text, Color color) {
         JButton btn = new JButton(text) {

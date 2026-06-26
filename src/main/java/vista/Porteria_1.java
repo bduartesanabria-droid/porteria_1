@@ -1,6 +1,5 @@
 package vista;
 
-import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import modelo.Conexion;
@@ -16,14 +15,16 @@ public class Porteria_1 {
 
             try {
                 Conexion.obtener().close();
-                JOptionPane.showMessageDialog(null,
+                UiDialogs.showMessage(null,
+                    "Base de datos lista",
                     "Conexión con la base de datos establecida correctamente.",
-                    "Base de datos lista", JOptionPane.INFORMATION_MESSAGE);
+                    UiDialogs.Kind.SUCCESS);
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(null,
+                UiDialogs.showMessage(null,
+                    "Error de conexión",
                     "No se pudo conectar a la base de datos PostgreSQL:\n" + ex.getMessage()
                     + "\n\nVerifica que el servidor esté activo en postgres-db:5432",
-                    "Error de conexión", JOptionPane.ERROR_MESSAGE);
+                    UiDialogs.Kind.ERROR);
             }
 
             new LoginView().setVisible(true);

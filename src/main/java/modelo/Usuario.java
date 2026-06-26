@@ -45,7 +45,9 @@ public class Usuario {
     }
 
     public boolean esInstructor() {
-        return "Instructor".equalsIgnoreCase(cargo);
+        return "Instructor".equalsIgnoreCase(cargo)
+            || "Profesor".equalsIgnoreCase(cargo)
+            || "Docente".equalsIgnoreCase(cargo);
     }
 
     public boolean esCelador() {

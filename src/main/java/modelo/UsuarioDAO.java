@@ -140,7 +140,7 @@ public class UsuarioDAO {
 
     public static void actualizarPerfil(Usuario u) throws SQLException {
         String sql = "UPDATE usuarios SET nombre=?, correo=?, documento=?, programa=?, ficha=?, " +
-                     "horario=?, tipo_sangre=?, foto=?, perfil_completo=?, updated_at=NOW() WHERE id=?";
+                     "horario=?, tipo_sangre=?, foto=?, perfil_completo=? WHERE id=?";
         try (Connection cn = Conexion.obtener();
              PreparedStatement ps = cn.prepareStatement(sql)) {
             ps.setString(1, u.getNombre());
@@ -223,7 +223,7 @@ public class UsuarioDAO {
     }
 
     public static void actualizarCargo(int id, String cargo) throws SQLException {
-        String sql = "UPDATE usuarios SET cargo=?, updated_at=NOW() WHERE id=?";
+        String sql = "UPDATE usuarios SET cargo=? WHERE id=?";
         try (Connection cn = Conexion.obtener(); PreparedStatement ps = cn.prepareStatement(sql)) {
             ps.setString(1, cargo);
             ps.setInt(2, id);

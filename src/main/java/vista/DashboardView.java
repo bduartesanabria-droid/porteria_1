@@ -84,6 +84,7 @@ public class DashboardView extends BaseAuthView {
 
         root.add(sidebarWrapper, BorderLayout.WEST);
         root.add(mainCards,      BorderLayout.CENTER);
+        showCard(defaultCardForCurrentUser());
         return root;
     }
 
@@ -140,40 +141,54 @@ public class DashboardView extends BaseAuthView {
         boolean isVigilante = u != null && u.esCelador();
         boolean isAdmin = u != null && u.esAdmin();
         boolean isCoord = u != null && u.esInstructor();
+        boolean isRestricted = isAdmin || isVigilante;
 
-        if (isAdmin || isVigilante) {
+        if (isRestricted) {
             menuWrapper.add(menuItem("Panel General",         true,  MenuIcon.HOME,    e -> showCard("general"),         false));
             menuWrapper.add(Box.createVerticalStrut(4));
-        }
-        if (isAdmin || isVigilante) {
             menuWrapper.add(menuItem("Escáner QR",            false, MenuIcon.QR,      e -> showCard("scanner"),         false));
             menuWrapper.add(Box.createVerticalStrut(4));
             menuWrapper.add(menuItem("Pases Manuales/QR",     false, MenuIcon.PASSES,  e -> showCard("passes"),          false));
             menuWrapper.add(Box.createVerticalStrut(4));
             menuWrapper.add(menuItem("Historial de Clases",   false, MenuIcon.HISTORY, e -> showCard("classes"),         false));
             menuWrapper.add(Box.createVerticalStrut(4));
-        }
-        if (isAdmin) {
-            menuWrapper.add(menuItem("Gestión de Perfiles",   false, MenuIcon.USERS,   e -> showCard("profiles"),        false));
-            menuWrapper.add(Box.createVerticalStrut(4));
-            menuWrapper.add(menuItem("Reporte Usuarios",      false, MenuIcon.REPORT,  e -> showCard("reports"),         false));
-            menuWrapper.add(Box.createVerticalStrut(4));
-        }
-        
-        // Todos pueden ver Mi Ficha, Comunicados y Mi Perfil (Excepto tal vez vigilante estricto, pero los dejamos general para aprendices/usuarios/coord)
-        if (!isVigilante || isAdmin) {
-            menuWrapper.add(menuItem("Mi Ficha",              false, MenuIcon.CARD,    e -> showCard("card"),            false));
-            menuWrapper.add(Box.createVerticalStrut(4));
+
+            if (isAdmin) {
+                menuWrapper.add(menuItem("Gestión de Perfiles",   false, MenuIcon.USERS,   e -> showCard("profiles"),        false));
+                menuWrapper.add(Box.createVerticalStrut(4));
+                menuWrapper.add(menuItem("Reporte Usuarios",      false, MenuIcon.REPORT,  e -> showCard("reports"),         false));
+                menuWrapper.add(Box.createVerticalStrut(4));
+                menuWrapper.add(menuItem("Historial de Cambios",  false, MenuIcon.CLOCK,   e -> showCard("changes"),         false));
+                menuWrapper.add(Box.createVerticalStrut(4));
+                menuWrapper.add(menuItem("Respaldos del Sistema", false, MenuIcon.BACKUPS,  e -> showCard("backups"),         false));
+            }
+
+            // Mi Ficha solo para instructor/profesor.
+            if (isCoord) {
+                menuWrapper.add(menuItem("Mi Ficha",              false, MenuIcon.CARD,    e -> showCard("card"),            false));
+                menuWrapper.add(Box.createVerticalStrut(4));
+            }
+
             menuWrapper.add(menuItem("Comunicados",           false, MenuIcon.MESSAGE, e -> showCard("messages"),        false));
             menuWrapper.add(Box.createVerticalStrut(4));
             menuWrapper.add(menuItem("Mi Perfil",             false, MenuIcon.CARD,    e -> showCard("profile"),         false));
             menuWrapper.add(Box.createVerticalStrut(4));
-        }
-        
-        if (isAdmin) {
-            menuWrapper.add(menuItem("Historial de Cambios",  false, MenuIcon.CLOCK,   e -> showCard("changes"),         false));
-            menuWrapper.add(Box.createVerticalStrut(4));
-            menuWrapper.add(menuItem("Respaldos del Sistema", false, MenuIcon.BACKUPS,  e -> showCard("backups"),         false));
+        } else {
+            JPanel notice = new JPanel();
+            notice.setOpaque(false);
+            notice.setLayout(new BoxLayout(notice, BoxLayout.Y_AXIS));
+            notice.setBorder(new EmptyBorder(18, 14, 18, 14));
+
+            JLabel title = new JLabel("Acceso limitado");
+            title.setFont(new Font("Segoe UI", Font.BOLD, 14));
+            title.setForeground(new Color(57, 169, 0));
+            JLabel body = new JLabel("<html>Este panel solo está disponible para <b>Super Admin</b> y <b>Celador/Portería</b>.</html>");
+            body.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+            body.setForeground(new Color(90, 100, 110));
+            notice.add(title);
+            notice.add(Box.createVerticalStrut(8));
+            notice.add(body);
+            menuWrapper.add(notice);
         }
         menuWrapper.add(Box.createVerticalGlue());
 
@@ -190,6 +205,17 @@ public class DashboardView extends BaseAuthView {
         scroll.getVerticalScrollBar().setUnitIncrement(16);
         scroll.setPreferredSize(new Dimension(280, 1));
         return scroll;
+    }
+
+    private String defaultCardForCurrentUser() {
+        Usuario u = AuthControlador.getUsuarioActual();
+        if (u == null) {
+            return "profile";
+        }
+        if (u.esAdmin() || u.esCelador()) {
+            return "general";
+        }
+        return "profile";
     }
 
 

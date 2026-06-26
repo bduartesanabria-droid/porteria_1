@@ -81,6 +81,22 @@ public class EquipoDAO {
         }
     }
 
+    public static void desvincular(int id) throws SQLException {
+        String sql = "UPDATE equipos SET usuario_id=NULL WHERE id=?";
+        try (Connection cn = Conexion.obtener(); PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            ps.executeUpdate();
+        }
+    }
+
+    public static void eliminar(int id) throws SQLException {
+        String sql = "DELETE FROM equipos WHERE id=?";
+        try (Connection cn = Conexion.obtener(); PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            ps.executeUpdate();
+        }
+    }
+
     public static void cambiarEstado(int id, String estado) throws SQLException {
         try (Connection cn = Conexion.obtener();
              PreparedStatement ps = cn.prepareStatement("UPDATE equipos SET estado=? WHERE id=?")) {

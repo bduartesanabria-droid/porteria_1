@@ -5,7 +5,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 public class RegisterView extends BaseAuthView {
@@ -20,7 +19,7 @@ public class RegisterView extends BaseAuthView {
 
     private JPanel buildForm() {
         javax.swing.JTextField nombre    = field("Nombre Completo");
-        javax.swing.JTextField correo    = field("Correo Institucional / Personal");
+        javax.swing.JTextField correo    = field("Correo de acceso / texto");
         javax.swing.JTextField documento = field("Documento de Identidad (Sin puntos)");
         javax.swing.JPasswordField pass  = password("Crea una Contraseña Segura");
         javax.swing.JTextField ficha     = field("Número de Ficha");
@@ -48,12 +47,13 @@ public class RegisterView extends BaseAuthView {
             String jorn = (String) jornada.getSelectedItem();
 
             if (nom.isEmpty()  || nom.equals("Nombre Completo")
-             || cor.isEmpty()  || cor.equals("Correo Institucional / Personal")
+             || cor.isEmpty()  || cor.equals("Correo de acceso / texto")
              || doc.isEmpty()  || doc.equals("Documento de Identidad (Sin puntos)")
              || pw.isEmpty()   || pw.equals("Crea una Contraseña Segura")) {
-                JOptionPane.showMessageDialog(this,
+                UiDialogs.showMessage(this,
+                    "Campos requeridos",
                     "Por favor completa todos los campos obligatorios.",
-                    "Campos requeridos", JOptionPane.WARNING_MESSAGE);
+                    UiDialogs.Kind.WARNING);
                 return;
             }
 
@@ -67,21 +67,36 @@ public class RegisterView extends BaseAuthView {
 
                 switch (resultado) {
                     case OK:
-                        JOptionPane.showMessageDialog(this, "¡Registro exitoso!");
+                        UiDialogs.showMessage(this,
+                            "Registro exitoso",
+                            "¡Registro exitoso!",
+                            UiDialogs.Kind.SUCCESS);
                         dispose();
                         new LoginView().setVisible(true);
                         break;
                     case CORREO_DUPLICADO:
-                        JOptionPane.showMessageDialog(this, "El correo ya está registrado.", "Error", JOptionPane.ERROR_MESSAGE);
+                        UiDialogs.showMessage(this,
+                            "Error",
+                            "El correo ya está registrado.",
+                            UiDialogs.Kind.ERROR);
                         break;
                     case DOCUMENTO_DUPLICADO:
-                        JOptionPane.showMessageDialog(this, "El documento ya está registrado.", "Error", JOptionPane.ERROR_MESSAGE);
+                        UiDialogs.showMessage(this,
+                            "Error",
+                            "El documento ya está registrado.",
+                            UiDialogs.Kind.ERROR);
                         break;
                     default:
-                        JOptionPane.showMessageDialog(this, "Ocurrió un error.", "Error", JOptionPane.ERROR_MESSAGE);
+                        UiDialogs.showMessage(this,
+                            "Error",
+                            "Ocurrió un error.",
+                            UiDialogs.Kind.ERROR);
                 }
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Error:\n" + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                UiDialogs.showMessage(this,
+                    "Error",
+                    "Error:\n" + ex.getMessage(),
+                    UiDialogs.Kind.ERROR);
             }
         });
 

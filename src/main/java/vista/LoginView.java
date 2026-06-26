@@ -4,8 +4,9 @@ import controlador.AuthControlador;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import javax.swing.JButton;
-import javax.swing.JOptionPane;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
+import modelo.Usuario;
 
 public class LoginView extends BaseAuthView {
 
@@ -23,9 +24,10 @@ public class LoginView extends BaseAuthView {
         ThemeCheckBox remember = checkBox("Recordarme");
 
         ThemeLink forgot = new ThemeLink("<html><u>¿Olvidaste tu contraseña?</u></html>", () ->
-            JOptionPane.showMessageDialog(this,
+            UiDialogs.showMessage(this,
+                "Recuperar contraseña",
                 "Funcionalidad de recuperación de contraseña próximamente disponible.",
-                "Recuperar contraseña", JOptionPane.INFORMATION_MESSAGE)
+                UiDialogs.Kind.INFO)
         ) {
             @Override public void applyTheme(boolean dark) {
                 setForeground(dark ? new Color(170, 181, 198) : new Color(120, 130, 140));
@@ -53,9 +55,10 @@ public class LoginView extends BaseAuthView {
             String pw = new String(pass.getPassword()).trim();
 
             if (id.isEmpty() || id.equals("Correo o Documento") || pw.isEmpty() || pw.equals("Contraseña")) {
-                JOptionPane.showMessageDialog(this,
+                UiDialogs.showMessage(this,
+                    "Campos requeridos",
                     "Por favor ingresa tu correo o documento y tu contraseña.",
-                    "Campos requeridos", JOptionPane.WARNING_MESSAGE);
+                    UiDialogs.Kind.WARNING);
                 return;
             }
 
@@ -63,51 +66,53 @@ public class LoginView extends BaseAuthView {
                 AuthControlador.ResultadoLogin resultado = AuthControlador.iniciarSesion(id, pw);
                 switch (resultado) {
                     case OK:
-                        JOptionPane.showMessageDialog(this,
+                        UiDialogs.showMessage(this,
+                            "Acceso concedido",
                             "¡Bienvenido! Sesión iniciada correctamente.",
-                            "Acceso concedido", JOptionPane.INFORMATION_MESSAGE);
+                            UiDialogs.Kind.SUCCESS);
                         dispose();
-                        new DashboardView().setVisible(true);
+                        abrirPantallaInicial();
                         break;
                     case CREDENCIALES_INCORRECTAS:
-                        JOptionPane.showMessageDialog(this,
+                        UiDialogs.showMessage(this,
+                            "Acceso denegado",
                             "Correo/documento o contraseña incorrectos.\nVerifica tus datos e intenta de nuevo.",
-                            "Acceso denegado", JOptionPane.ERROR_MESSAGE);
+                            UiDialogs.Kind.ERROR);
                         break;
                     case CUENTA_BLOQUEADA:
-                        JOptionPane.showMessageDialog(this,
+                        UiDialogs.showMessage(this,
+                            "Cuenta bloqueada",
                             "Tu cuenta está bloqueada por múltiples intentos fallidos.\nIntenta de nuevo en 10 minutos.",
-                            "Cuenta bloqueada", JOptionPane.ERROR_MESSAGE);
-                        break;
-                    case CORREO_NO_VERIFICADO:
-                        JOptionPane.showMessageDialog(this,
-                            "Tu correo electrónico no ha sido verificado.\nRevisa tu bandeja de entrada.",
-                            "Correo no verificado", JOptionPane.WARNING_MESSAGE);
+                            UiDialogs.Kind.ERROR);
                         break;
                     case PERFIL_INCOMPLETO:
-                        JOptionPane.showMessageDialog(this,
+                        UiDialogs.showMessage(this,
+                            "Perfil incompleto",
                             "Tu perfil está incompleto.\nCompleta tus datos para acceder a todas las funciones.",
-                            "Perfil incompleto", JOptionPane.WARNING_MESSAGE);
+                            UiDialogs.Kind.WARNING);
                         dispose();
-                        new DashboardView().setVisible(true);
+                        abrirPantallaInicial();
                         break;
                     case DEBE_CAMBIAR_CONTRASENA:
-                        JOptionPane.showMessageDialog(this,
+                        UiDialogs.showMessage(this,
+                            "Cambio de contraseña requerido",
                             "Debes cambiar tu contraseña antes de continuar.\nSerás redirigido al panel.",
-                            "Cambio de contraseña requerido", JOptionPane.WARNING_MESSAGE);
+                            UiDialogs.Kind.WARNING);
                         dispose();
-                        new DashboardView().setVisible(true);
+                        abrirPantallaInicial();
                         break;
                     default:
-                        JOptionPane.showMessageDialog(this,
+                        UiDialogs.showMessage(this,
+                            "Error",
                             "Ocurrió un error inesperado. Intenta de nuevo.",
-                            "Error", JOptionPane.ERROR_MESSAGE);
+                            UiDialogs.Kind.ERROR);
                 }
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this,
+                UiDialogs.showMessage(this,
+                    "Error de conexión",
                     "Error al conectar con la base de datos:\n" + ex.getMessage()
                     + "\n\nVerifica que el servidor PostgreSQL esté activo.",
-                    "Error de conexión", JOptionPane.ERROR_MESSAGE);
+                    UiDialogs.Kind.ERROR);
             }
         });
 
@@ -126,5 +131,20 @@ public class LoginView extends BaseAuthView {
             addRow(card, g, loginBtn, 8, 18);
             addRow(card, g, signup, 18, 0);
         });
+    }
+
+    private void abrirPantallaInicial() {
+        Usuario u = AuthControlador.getUsuarioActual();
+        if (u != null && (u.esAdmin() || u.esCelador())) {
+            new DashboardView().setVisible(true);
+            return;
+        }
+
+        JFrame frame = new JFrame("SENA | Mi Perfil");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setContentPane(new MiPerfilView(null));
+        frame.setSize(1280, 900);
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
     }
 }

@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.Dialog;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -14,15 +15,21 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
+import java.awt.Window;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 
 enum MenuIcon {
     HOME,
@@ -532,5 +539,323 @@ class SidebarButton extends JButton implements BaseAuthView.ThemeAware {
         }
         g2.dispose();
         super.paintComponent(g);
+    }
+}
+
+final class UiDialogs {
+    enum Kind {
+        INFO,
+        SUCCESS,
+        WARNING,
+        ERROR
+    }
+
+    private UiDialogs() {
+    }
+
+    static void showMessage(Component parent, String title, String message, Kind kind) {
+        JDialog dialog = buildDialog(parent, title, message, kind, false);
+        dialog.setVisible(true);
+    }
+
+    static boolean showConfirm(Component parent, String title, String message) {
+        final boolean[] accepted = new boolean[] { false };
+        Window owner = parent == null ? null : SwingUtilities.getWindowAncestor(parent);
+        JDialog dialog = new JDialog(owner, title, Dialog.ModalityType.APPLICATION_MODAL);
+        dialog.setUndecorated(true);
+        dialog.setBackground(new Color(0, 0, 0, 0));
+
+        JPanel root = new JPanel(new java.awt.BorderLayout(0, 0)) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(new Color(0, 0, 0, 18));
+                g2.fillRoundRect(8, 10, getWidth() - 16, getHeight() - 16, 26, 26);
+                g2.setColor(Color.WHITE);
+                g2.fillRoundRect(0, 0, getWidth() - 10, getHeight() - 10, 24, 24);
+                g2.dispose();
+            }
+        };
+        root.setOpaque(false);
+        root.setBorder(new EmptyBorder(18, 18, 18, 18));
+
+        JPanel card = new JPanel(new java.awt.BorderLayout(0, 16));
+        card.setOpaque(false);
+        card.setBorder(new EmptyBorder(18, 22, 18, 22));
+
+        JPanel header = new JPanel(new java.awt.BorderLayout(14, 0));
+        header.setOpaque(false);
+
+        JPanel badge = new JPanel() {
+            @Override protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(new Color(52, 120, 246, 34));
+                g2.fillOval(0, 0, getWidth(), getHeight());
+                g2.setColor(new Color(52, 120, 246));
+                g2.setStroke(new BasicStroke(4f));
+                g2.drawOval(6, 6, getWidth() - 12, getHeight() - 12);
+                g2.dispose();
+            }
+        };
+        badge.setOpaque(false);
+        badge.setPreferredSize(new Dimension(48, 48));
+
+        JPanel textGroup = new JPanel();
+        textGroup.setOpaque(false);
+        textGroup.setLayout(new BoxLayout(textGroup, BoxLayout.Y_AXIS));
+        JLabel subLabel = new JLabel("Información");
+        subLabel.setFont(new Font("Segoe UI", Font.BOLD, 11));
+        subLabel.setForeground(new Color(52, 120, 246));
+        JLabel titleLabel = new JLabel(title);
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        titleLabel.setForeground(new Color(35, 44, 56));
+        textGroup.add(subLabel);
+        textGroup.add(titleLabel);
+
+        header.add(badge, java.awt.BorderLayout.WEST);
+        header.add(textGroup, java.awt.BorderLayout.CENTER);
+
+        JTextArea body = new JTextArea(message);
+        body.setEditable(false);
+        body.setOpaque(false);
+        body.setColumns(28);
+        body.setLineWrap(true);
+        body.setWrapStyleWord(true);
+        body.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        body.setForeground(new Color(70, 78, 92));
+        body.setBorder(new EmptyBorder(0, 12, 0, 12));
+
+        JPanel footer = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 0, 0));
+        footer.setOpaque(false);
+
+        JButton cancel = new JButton("Cancelar");
+        styleSecondaryButton(cancel);
+        cancel.addActionListener(e -> dialog.dispose());
+
+        JButton ok = new JButton("Aceptar");
+        stylePrimaryButton(ok, new Color(57, 169, 0));
+        ok.addActionListener(e -> {
+            accepted[0] = true;
+            dialog.dispose();
+        });
+
+        footer.add(cancel);
+        footer.add(Box.createHorizontalStrut(10));
+        footer.add(ok);
+
+        JPanel bodyWrap = new JPanel(new java.awt.BorderLayout());
+        bodyWrap.setOpaque(false);
+        bodyWrap.add(body, java.awt.BorderLayout.CENTER);
+
+        card.add(header, java.awt.BorderLayout.NORTH);
+        card.add(bodyWrap, java.awt.BorderLayout.CENTER);
+        card.add(footer, java.awt.BorderLayout.SOUTH);
+
+        JPanel shell = new JPanel(new java.awt.BorderLayout());
+        shell.setOpaque(true);
+        shell.setBackground(Color.WHITE);
+        shell.setBorder(new LineBorder(new Color(225, 231, 240), 1, true));
+        shell.add(card, java.awt.BorderLayout.CENTER);
+
+        root.add(shell, java.awt.BorderLayout.CENTER);
+        dialog.setContentPane(root);
+        dialog.pack();
+        dialog.setSize(Math.max(420, dialog.getWidth()), Math.max(210, dialog.getHeight()));
+        dialog.setLocationRelativeTo(parent);
+        dialog.setVisible(true);
+        return accepted[0];
+    }
+
+    private static JDialog buildDialog(Component parent, String title, String message, Kind kind, boolean confirm) {
+        Window owner = parent == null ? null : SwingUtilities.getWindowAncestor(parent);
+        JDialog dialog = new JDialog(owner, title, Dialog.ModalityType.APPLICATION_MODAL);
+        dialog.setUndecorated(true);
+        dialog.setBackground(new Color(0, 0, 0, 0));
+
+        Color accent = accentFor(kind);
+        Color accentSoft = softAccentFor(kind);
+
+        JPanel root = new JPanel(new java.awt.BorderLayout(0, 0)) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(new Color(0, 0, 0, 18));
+                g2.fillRoundRect(8, 10, getWidth() - 16, getHeight() - 16, 26, 26);
+                g2.setColor(Color.WHITE);
+                g2.fillRoundRect(0, 0, getWidth() - 10, getHeight() - 10, 24, 24);
+                g2.dispose();
+            }
+        };
+        root.setOpaque(false);
+        root.setBorder(new EmptyBorder(18, 18, 18, 18));
+
+        JPanel card = new JPanel();
+        card.setLayout(new java.awt.BorderLayout(0, 16));
+        card.setOpaque(false);
+        card.setBorder(new EmptyBorder(18, 22, 18, 22));
+
+        JPanel header = new JPanel(new java.awt.BorderLayout(14, 0));
+        header.setOpaque(false);
+        header.setBorder(new EmptyBorder(8, 10, 0, 10));
+
+        JPanel badge = new JPanel() {
+            @Override protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(accentSoft);
+                g2.fillOval(0, 0, getWidth(), getHeight());
+                g2.setColor(accent);
+                g2.setStroke(new BasicStroke(4f));
+                g2.drawOval(6, 6, getWidth() - 12, getHeight() - 12);
+                g2.dispose();
+            }
+        };
+        badge.setOpaque(false);
+        badge.setPreferredSize(new Dimension(48, 48));
+
+        JLabel titleLabel = new JLabel(title);
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        titleLabel.setForeground(new Color(35, 44, 56));
+
+        JLabel subLabel = new JLabel(kindText(kind));
+        subLabel.setFont(new Font("Segoe UI", Font.BOLD, 11));
+        subLabel.setForeground(accent);
+
+        JPanel textGroup = new JPanel();
+        textGroup.setOpaque(false);
+        textGroup.setLayout(new BoxLayout(textGroup, BoxLayout.Y_AXIS));
+        textGroup.add(subLabel);
+        textGroup.add(titleLabel);
+
+        header.add(badge, java.awt.BorderLayout.WEST);
+        header.add(textGroup, java.awt.BorderLayout.CENTER);
+
+        JTextArea body = new JTextArea(message);
+        body.setEditable(false);
+        body.setOpaque(false);
+        body.setColumns(28);
+        body.setLineWrap(true);
+        body.setWrapStyleWord(true);
+        body.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        body.setForeground(new Color(70, 78, 92));
+        body.setBorder(new EmptyBorder(0, 12, 0, 12));
+
+        JPanel footer = new JPanel();
+        footer.setOpaque(false);
+        footer.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 0, 0));
+
+        if (confirm) {
+            JButton cancel = new JButton("Cancelar");
+            styleSecondaryButton(cancel);
+            cancel.addActionListener(e -> dialog.dispose());
+
+            JButton ok = new JButton("Aceptar");
+            stylePrimaryButton(ok, accent);
+            ok.addActionListener(e -> dialog.dispose());
+
+            footer.add(cancel);
+            footer.add(Box.createHorizontalStrut(10));
+            footer.add(ok);
+        } else {
+            JButton ok = new JButton("Entendido");
+            stylePrimaryButton(ok, accent);
+            ok.addActionListener(e -> dialog.dispose());
+            footer.add(ok);
+        }
+
+        JPanel bodyWrap = new JPanel(new java.awt.BorderLayout());
+        bodyWrap.setOpaque(false);
+        bodyWrap.setBorder(new EmptyBorder(0, 10, 0, 10));
+        bodyWrap.add(body, java.awt.BorderLayout.CENTER);
+
+        card.add(header, java.awt.BorderLayout.NORTH);
+        card.add(bodyWrap, java.awt.BorderLayout.CENTER);
+        card.add(footer, java.awt.BorderLayout.SOUTH);
+
+        JPanel shell = new JPanel(new java.awt.BorderLayout());
+        shell.setOpaque(true);
+        shell.setBackground(Color.WHITE);
+        shell.setBorder(new LineBorder(new Color(225, 231, 240), 1, true));
+        shell.add(card, java.awt.BorderLayout.CENTER);
+
+        root.add(shell, java.awt.BorderLayout.CENTER);
+        dialog.setContentPane(root);
+        dialog.pack();
+        dialog.setSize(Math.max(420, dialog.getWidth()), Math.max(210, dialog.getHeight()));
+        dialog.setLocationRelativeTo(parent);
+        return dialog;
+    }
+
+    private static void stylePrimaryButton(JButton button, Color fill) {
+        button.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        button.setForeground(Color.WHITE);
+        button.setFocusPainted(false);
+        button.setBorderPainted(false);
+        button.setContentAreaFilled(true);
+        button.setOpaque(true);
+        button.setBackground(fill);
+        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        button.setBorder(new EmptyBorder(10, 18, 10, 18));
+        button.setPreferredSize(new Dimension(128, 40));
+        button.setMaximumSize(new Dimension(128, 40));
+    }
+
+    private static void styleSecondaryButton(JButton button) {
+        button.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        button.setForeground(new Color(90, 100, 114));
+        button.setFocusPainted(false);
+        button.setBorderPainted(false);
+        button.setContentAreaFilled(true);
+        button.setOpaque(true);
+        button.setBackground(new Color(242, 245, 249));
+        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        button.setBorder(new EmptyBorder(10, 18, 10, 18));
+        button.setPreferredSize(new Dimension(128, 40));
+        button.setMaximumSize(new Dimension(128, 40));
+    }
+
+    private static Color accentFor(Kind kind) {
+        switch (kind) {
+            case SUCCESS:
+                return new Color(57, 169, 0);
+            case WARNING:
+                return new Color(245, 153, 18);
+            case ERROR:
+                return new Color(220, 56, 56);
+            case INFO:
+            default:
+                return new Color(52, 120, 246);
+        }
+    }
+
+    private static Color softAccentFor(Kind kind) {
+        switch (kind) {
+            case SUCCESS:
+                return new Color(57, 169, 0, 34);
+            case WARNING:
+                return new Color(245, 153, 18, 34);
+            case ERROR:
+                return new Color(220, 56, 56, 34);
+            case INFO:
+            default:
+                return new Color(52, 120, 246, 34);
+        }
+    }
+
+    private static String kindText(Kind kind) {
+        switch (kind) {
+            case SUCCESS:
+                return "Éxito";
+            case WARNING:
+                return "Advertencia";
+            case ERROR:
+                return "Error";
+            case INFO:
+            default:
+                return "Información";
+        }
     }
 }

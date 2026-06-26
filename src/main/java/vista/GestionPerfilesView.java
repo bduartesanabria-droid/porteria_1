@@ -162,7 +162,7 @@ public class GestionPerfilesView extends JPanel {
                 });
             }
         } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(this, "Error al cargar usuarios: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            UiDialogs.showMessage(this, "Error", "Error al cargar usuarios: " + ex.getMessage(), UiDialogs.Kind.ERROR);
         }
     }
 
@@ -193,7 +193,7 @@ public class GestionPerfilesView extends JPanel {
     private Usuario getSelectedUser() {
         int row = tabla.getSelectedRow();
         if (row < 0) {
-            JOptionPane.showMessageDialog(this, "Selecciona un usuario de la tabla.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            UiDialogs.showMessage(this, "Aviso", "Selecciona un usuario de la tabla.", UiDialogs.Kind.WARNING);
             return null;
         }
         int id = (int) tableModel.getValueAt(row, 0);
@@ -249,10 +249,10 @@ public class GestionPerfilesView extends JPanel {
                 aud.setAccion("EDITAR");
                 aud.setMotivo("Edici\u00f3n de perfil desde gesti\u00f3n de perfiles");
                 AuditoriaDAO.registrar(aud);
-                JOptionPane.showMessageDialog(this, "Usuario actualizado correctamente.", "\u00c9xito", JOptionPane.INFORMATION_MESSAGE);
+                UiDialogs.showMessage(this, "\u00c9xito", "Usuario actualizado correctamente.", UiDialogs.Kind.SUCCESS);
                 cargarDatos();
             } catch (SQLException ex) {
-                JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                UiDialogs.showMessage(this, "Error", "Error: " + ex.getMessage(), UiDialogs.Kind.ERROR);
             }
         }
     }
@@ -266,15 +266,15 @@ public class GestionPerfilesView extends JPanel {
         if (r == JOptionPane.OK_OPTION) {
             String pass = new String(pf.getPassword()).trim();
             if (pass.length() < 6) {
-                JOptionPane.showMessageDialog(this, "La contrase\u00f1a debe tener al menos 6 caracteres.", "Error", JOptionPane.WARNING_MESSAGE);
+                UiDialogs.showMessage(this, "Error", "La contrase\u00f1a debe tener al menos 6 caracteres.", UiDialogs.Kind.WARNING);
                 return;
             }
             try {
                 String hash = ContrasenaUtil.hashear(pass);
                 UsuarioDAO.actualizarContrasena(u.getId(), hash);
-                JOptionPane.showMessageDialog(this, "Contrase\u00f1a actualizada.", "\u00c9xito", JOptionPane.INFORMATION_MESSAGE);
+                UiDialogs.showMessage(this, "\u00c9xito", "Contrase\u00f1a actualizada.", UiDialogs.Kind.SUCCESS);
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                UiDialogs.showMessage(this, "Error", "Error: " + ex.getMessage(), UiDialogs.Kind.ERROR);
             }
         }
     }
@@ -283,15 +283,13 @@ public class GestionPerfilesView extends JPanel {
         Usuario u = getSelectedUser();
         if (u == null) return;
         String nuevo = u.isCorreoVerificado() ? "Inactivo" : "Activo";
-        int conf = JOptionPane.showConfirmDialog(this,
-            "\u00bfCambiar estado de " + u.getNombre() + " a " + nuevo + "?", "Confirmar", JOptionPane.YES_NO_OPTION);
-        if (conf == JOptionPane.YES_OPTION) {
+        if (UiDialogs.showConfirm(this, "Confirmar", "¿Cambiar estado de " + u.getNombre() + " a " + nuevo + "?")) {
             try {
                 UsuarioDAO.actualizarEstado(u.getId(), nuevo);
-                JOptionPane.showMessageDialog(this, "Estado actualizado.", "\u00c9xito", JOptionPane.INFORMATION_MESSAGE);
+                UiDialogs.showMessage(this, "\u00c9xito", "Estado actualizado.", UiDialogs.Kind.SUCCESS);
                 cargarDatos();
             } catch (SQLException ex) {
-                JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                UiDialogs.showMessage(this, "Error", "Error: " + ex.getMessage(), UiDialogs.Kind.ERROR);
             }
         }
     }
@@ -329,10 +327,10 @@ public class GestionPerfilesView extends JPanel {
                         }
                     }
                 }
-                JOptionPane.showMessageDialog(this, "Carga completada. Usuarios agregados: " + count, "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                UiDialogs.showMessage(this, "Éxito", "Carga completada. Usuarios agregados: " + count, UiDialogs.Kind.SUCCESS);
                 cargarDatos();
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Error leyendo CSV: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                UiDialogs.showMessage(this, "Error", "Error leyendo CSV: " + ex.getMessage(), UiDialogs.Kind.ERROR);
             }
         }
     }
@@ -417,7 +415,7 @@ public class GestionPerfilesView extends JPanel {
             String cargo = (String) cbCargo.getSelectedItem();
             
             if (nombre.isEmpty() || correo.isEmpty() || doc.isEmpty() || "Seleccione...".equals(cargo)) {
-                JOptionPane.showMessageDialog(d, "Nombre, Correo, Documento y Cargo son obligatorios.", "Advertencia", JOptionPane.WARNING_MESSAGE);
+                UiDialogs.showMessage(d, "Advertencia", "Nombre, Correo, Documento y Cargo son obligatorios.", UiDialogs.Kind.WARNING);
                 return;
             }
             if (pass.isEmpty()) pass = doc;
@@ -440,10 +438,10 @@ public class GestionPerfilesView extends JPanel {
 
                 UsuarioDAO.crear(nuevo);
                 d.dispose();
-                JOptionPane.showMessageDialog(this, "Usuario agregado exitosamente.", "\u00c9xito", JOptionPane.INFORMATION_MESSAGE);
+                UiDialogs.showMessage(this, "\u00c9xito", "Usuario agregado exitosamente.", UiDialogs.Kind.SUCCESS);
                 cargarDatos();
             } catch (SQLException ex) {
-                JOptionPane.showMessageDialog(d, "Error al guardar el usuario: " + ex.getMessage(), "Error BD", JOptionPane.ERROR_MESSAGE);
+                UiDialogs.showMessage(d, "Error BD", "Error al guardar el usuario: " + ex.getMessage(), UiDialogs.Kind.ERROR);
             }
         });
         

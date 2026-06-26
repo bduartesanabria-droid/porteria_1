@@ -152,13 +152,13 @@ public class ReporteUsuariosView extends JPanel {
                 });
             }
         } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            UiDialogs.showMessage(this, "Error", "Error: " + ex.getMessage(), UiDialogs.Kind.ERROR);
         }
     }
 
     private void exportarCSV() {
         if (currentData == null || currentData.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "No hay datos para exportar.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            UiDialogs.showMessage(this, "Aviso", "No hay datos para exportar.", UiDialogs.Kind.WARNING);
             return;
         }
         JFileChooser fc = new JFileChooser();
@@ -179,9 +179,9 @@ public class ReporteUsuariosView extends JPanel {
                         a.getProgramaPersona() != null ? a.getProgramaPersona() : "",
                         a.getEquiposStr() != null ? a.getEquiposStr() : "");
                 }
-                JOptionPane.showMessageDialog(this, "Exportado exitosamente: " + file.getName(), "\u00c9xito", JOptionPane.INFORMATION_MESSAGE);
+                UiDialogs.showMessage(this, "\u00c9xito", "Exportado exitosamente: " + file.getName(), UiDialogs.Kind.SUCCESS);
             } catch (IOException ex) {
-                JOptionPane.showMessageDialog(this, "Error al exportar: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                UiDialogs.showMessage(this, "Error", "Error al exportar: " + ex.getMessage(), UiDialogs.Kind.ERROR);
             }
         }
     }

@@ -149,7 +149,7 @@ public class HistorialCambiosView extends JPanel {
                 });
             }
         } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(this, "Error al cargar historial: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            UiDialogs.showMessage(this, "Error", "Error al cargar historial: " + ex.getMessage(), UiDialogs.Kind.ERROR);
         }
     }
 
